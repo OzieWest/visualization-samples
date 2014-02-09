@@ -12,5 +12,10 @@ namespace Visualization_Samples.Controllers
 		{
 			return View();
 		}
+
+		public ActionResult SecondGraph()
+		{
+			return View();
+		}
 	}
 }

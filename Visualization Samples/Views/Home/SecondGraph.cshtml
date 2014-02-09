@@ -1,0 +1,190 @@
+﻿@{
+	ViewBag.Title = "D3.js";
+}
+
+@section header
+{
+	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
+}
+
+<div ng-controller="ctrl">
+
+	<textarea style="width: 100%;" rows="3"
+		ng-change="message.split()"
+		ng-model="message.source"
+		placeholder="example: help me hennry with haskel"></textarea>
+	
+	<div class="alert alert-info">
+		<span class="label label-info">Length: {{ message.words.length }}</span>
+	</div>
+
+	<svg />
+
+</div>
+
+@section scripts
+{
+	<script type="text/javascript">
+		app.value('ddd', d3);
+
+		app.controller('ctrl', function($scope, ddd) {
+
+			$scope.message = {
+				source: 'JavaScript, and JavaScript development has come a long way since the early days. Time and circumstance have been kind to the platform, and recent changes, specifically the addition of such modern frameworks as Knockout, Backbone, and AngularJS have really raised the bar, ushering in an era of maturity and sophistication that we’ve simply never seen before now.',
+				words: [],
+				split: function splitSource() {
+					var message = $scope.message.source.toLowerCase();
+					message = message.replace(/[^A-Za-zА-Яа-яё\s]+/g, "").replace(/\s+/, " ");
+					$scope.message.words = message.split(' ');
+
+					$scope.rebuildTree();
+					update($scope.root);
+				}
+			};
+
+			var currentNode = {};
+			$scope.rebuildTree = function() {
+				$scope.root = $scope.createNode('root');
+				if ($scope.message.source) {
+					for (var i = 0; i < $scope.message.words.length; i++) {
+						var word = $scope.message.words[i];
+						for (var j = 0; j < word.length; j++) {
+							if (j == 0) currentNode = $scope.root;
+							var letter = word[j];
+							$scope.checkNode(letter);
+						}
+					}
+				}
+			};
+
+			$scope.checkNode = function(letter) {
+				for (var i = 0; i < currentNode.children.length; i++) {
+					var node = currentNode.children[i];
+					if (letter == node.name) {
+						node.value += 1;
+						currentNode = node;
+						return;
+					}
+				}
+
+				var newNode = $scope.createNode(letter);
+				currentNode.children.push(newNode);
+				currentNode = newNode;
+			};
+
+			$scope.createNode = function(name) {
+				var node = {
+					name: name,
+					value: 1,
+					type: 'black',
+					level: 'red',
+					children: []
+				};
+				return node;
+			};
+
+			$(document).ready(function () {
+				$scope.message.split();
+			});
+
+			var width = 960,
+				height = 600;
+
+			var force = ddd.layout.force()
+				.size([width, height])
+				.on("tick", tick);
+
+			var svg = ddd.select("svg")
+				.attr("width", width)
+				.attr("height", height);
+
+			var link = svg.selectAll(".link"),
+				node = svg.selectAll(".node");
+
+			function update(root) {
+				console.info(root);
+				var nodes = flatten(root),
+					links = ddd.layout.tree().links(nodes);
+
+				// Restart the force layout.
+				force
+					.nodes(nodes)
+					.links(links)
+					.start();
+
+				// Update the links…
+				link = link.data(links, function(d) { return d.target.id; });
+
+				// Exit any old links.
+				link.exit().remove();
+
+				// Enter any new links.
+				link.enter().insert("line", ".node")
+					.attr("class", "link")
+					.attr("x1", function(d) { return d.source.x; })
+					.attr("y1", function(d) { return d.source.y; })
+					.attr("x2", function(d) { return d.target.x; })
+					.attr("y2", function(d) { return d.target.y; });
+
+				// Update the nodes…
+				node = node.data(nodes, function(d) { return d.id; }).style("fill", color);
+
+				// Exit any old nodes.
+				node.exit().remove();
+
+				// Enter any new nodes.
+				node.enter().append("circle")
+					.attr("class", "node")
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; })
+					.attr("r", function (d) {
+						return Math.sqrt(d.value) * 4.5;
+					})
+					.style("fill", color)
+					.on("click", click)
+					.call(force.drag);
+			}
+
+			function tick() {
+				link.attr("x1", function(d) { return d.source.x; })
+					.attr("y1", function(d) { return d.source.y; })
+					.attr("x2", function(d) { return d.target.x; })
+					.attr("y2", function(d) { return d.target.y; });
+
+				node.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+			}
+
+			function color(d) {
+				return d.children.length > 0 ? "#c6dbef" : "#fd8d3c";
+			}
+
+			function click(d) {
+				if (!d3.event.defaultPrevented) {
+					if (d.children) {
+						d._children = d.children;
+						d.children = null;
+					} else {
+						d.children = d._children;
+						d._children = null;
+					}
+					update();
+				}
+			}
+
+			function flatten(root) {
+				var nodes = [], i = 0;
+
+				function recurse(node) {
+					if (node.children) node.children.forEach(recurse);
+					if (!node.id) node.id = ++i;
+					nodes.push(node);
+				}
+
+				recurse(root);
+				return nodes;
+			}
+		});
+	</script>
+}
+
