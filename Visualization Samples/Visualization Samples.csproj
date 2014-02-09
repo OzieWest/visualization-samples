@@ -220,6 +220,7 @@
     <Content Include="Scripts\angular.min.js.map" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\angular-mocks.js" />
+    <Content Include="Scripts\collapse.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -266,6 +267,9 @@
     <Content Include="Views\Web.config" />
     <Content Include="Views\Home\Sigma.cshtml" />
     <Content Include="Views\Home\SecondGraph.cshtml" />
+    <Content Include="Views\Home\Hexagon.cshtml" />
+    <Content Include="Views\Home\Сonfetti.cshtml" />
+    <Content Include="Views\Home\Charts.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,0 +1,127 @@
+﻿@{
+	ViewBag.Title = "D3.js";
+}
+
+@section header
+{
+	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
+}
+
+@section style{
+	<style>
+		.axis text {
+			font-size: 10px;
+		}
+
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: gray;
+			shape-rendering: crispEdges;
+		}
+
+		.hexagon {
+			stroke: #fff;
+			stroke-width: .5px;
+		}
+	</style>
+}
+
+<div ng-controller="hexagon">
+	
+	<button class="btn btn-info" ng-click="addPoint()">Add point 200 points</button>
+	<svg/>
+</div>
+
+@section scripts
+{
+	<script src="http://d3js.org/d3.hexbin.v0.min.js?5c6e4f0"></script>
+
+	<script type="text/javascript">
+		app.value('ddd', d3);
+
+		app.controller('hexagon', function ($scope, ddd) {
+
+			var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+				width = 960 - margin.left - margin.right,
+				height = 600 - margin.top - margin.bottom;
+
+			var randomX = ddd.random.normal(width / 2, 80),
+				randomY = ddd.random.normal(height / 2, 80);
+
+			var radius = ddd.scale.sqrt()
+				.domain([0, 50])
+				.range([0, 20]);
+
+			var hexbin = ddd.hexbin()
+				.size([width, height])
+				.radius(20);
+
+			var x = ddd.scale.identity()
+				.domain([0, width]);
+
+			var y = ddd.scale.linear()
+				.domain([0, height])
+				.range([height, 0]);
+
+			var xAxis = ddd.svg.axis()
+				.scale(x)
+				.orient("bottom")
+				.tickSize(6, -height);
+
+			var yAxis = ddd.svg.axis()
+				.scale(y)
+				.orient("left")
+				.tickSize(6, -width);
+
+			function draw(_points) {
+				var svg = ddd.select("svg")
+					.attr("width", width + margin.left + margin.right)
+					.attr("height", height + margin.top + margin.bottom)
+					.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				svg.append("clipPath")
+					.attr("id", "clip")
+					.append("rect")
+					.attr("class", "mesh")
+					.attr("width", width)
+					.attr("height", height);
+
+				svg.append("g")
+					.attr("clip-path", "url(#clip)")
+					.selectAll(".hexagon")
+					.data(hexbin(_points))
+					.enter().append("path")
+					.attr("class", "hexagon")
+					.style('fill', function (d) { return 'rgb(43, 140, ' + (d.length * 5).toString() + ')'; })
+					.attr("d", function(d) {
+						return hexbin.hexagon(radius(d.length));
+					})
+					.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+				svg.append("g")
+					.attr("class", "y axis")
+					.call(yAxis);
+
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis);
+			}
+			
+			$scope.points = ddd.range(200).map(function () { return [randomX(), randomY()]; });
+			draw($scope.points);
+
+			$scope.addPoint = function () {
+
+				for (var i = 0; i < 200; i++) {
+					var point = [randomX(), randomY()];
+					$scope.points.push(point);
+				}
+				
+				draw($scope.points);
+			};
+		});
+	</script>
+}

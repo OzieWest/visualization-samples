@@ -13,6 +13,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
+	
+	@RenderSection("style", required: false)
 </head>
 
 <body class="background-dark">
@@ -29,6 +31,8 @@
 				<ul id="forms-collapse" class="panel-collapse">
 					<li><a href='@Url.Action("Index", "Home")'>Simple Tree</a></li>
 					<li><a href='@Url.Action("SecondGraph", "Home")'>Simple Graph</a></li>
+					<li><a href='@Url.Action("Hexagon", "Home")'>Hexagon</a></li>
+					<li><a href='@Url.Action("Сonfetti", "Home")'>Сonfetti</a></li>
 				</ul>
 			</li>
 		</ul>

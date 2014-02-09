@@ -1,0 +1,69 @@
+﻿@{
+	ViewBag.Title = "D3.js";
+}
+
+@section header
+{
+	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
+}
+
+<div>
+	<svg />
+</div>
+
+@section scripts
+{
+	<script type="text/javascript">
+
+		var w = 960,
+			h = 500,
+			nodes = [];
+
+		var svg = d3.select("svg")
+			.attr("width", w)
+			.attr("height", h);
+
+		var force = d3.layout.force()
+			.charge(-20)
+			.size([w, h])
+			.nodes(nodes)
+			.on("tick", tick)
+			.start();
+
+		function tick() {
+			svg.selectAll("circle")
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+		}
+
+		function col() {
+			var r = Math.floor((Math.random() * 250) + 1).toString();
+			var g = Math.floor((Math.random() * 250) + 1).toString();
+			var b = Math.floor((Math.random() * 250) + 1).toString();
+			return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+		}
+
+		var interval = setInterval(function() {
+			var d = {
+				x: w / 2 + 2 * Math.random() - 1,
+				y: h / 2 + 2 * Math.random() - 1
+			};
+
+			svg.append("svg:circle")
+				.data([d])
+				.attr("r", 1e-6)
+				.transition()
+				.ease(Math.sqrt)
+				.style("fill", function(d) { return col(); })
+				.attr("r", 6);
+
+			if (nodes.push(d) > 300) clearInterval(interval);
+			force.start();
+		}, 30);
+
+		$('svg').on('click', function() {
+			force.start();
+		});
+	</script>
+}
+

@@ -1,0 +1,141 @@
+﻿@{
+	ViewBag.Title = "D3.js";
+}
+
+@section header
+{
+	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
+}
+
+@section style
+{
+	<style>
+		body {
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			margin: auto;
+			position: relative;
+		}
+
+		text {
+			font: 10px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+		}
+
+		.x.axis path {
+			display: none;
+		}
+
+		.line {
+			fill: none;
+			stroke: rgb(172, 133, 85);
+			stroke-width: 1.5px;
+		}
+	</style>
+}
+
+<div>
+	<svg />
+</div>
+
+@section scripts
+{
+	<script type="text/javascript">
+
+		var city = 'NY';
+		
+		var margin = { top: 20, right: 80, bottom: 30, left: 50 },
+			width = 960 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+
+		var x = d3.time.scale()
+			.range([0, width]);
+
+		var y = d3.scale.linear()
+			.range([height, 0]);
+
+		var xAxis = d3.svg.axis()
+			.scale(x)
+			.orient("bottom");
+
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left");
+
+		var line = d3.svg.line()
+			.interpolate("basis")
+			.x(function(d) { return x(d.date); })
+			.y(function(d) { return y(d[city]); });
+
+		var svg = d3.select("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var data = generateData();
+
+		function generateData() {
+			var prev = getRandomInt(1, 10);
+			var data = [];
+			for (var i = 0; i < 100; i++) {
+				var a = {
+					date: new Date(2014, 1, i + 1, 1, 1, 1, 1),
+					value: getRandomInt(1, 10)
+				};
+
+				data.push(a);
+			}
+
+			console.info(data);
+			return data;
+		}
+		
+		function getRandomInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		(function() {
+			data.forEach(function (d) {
+				d["NY"] = +d.value;
+			});
+
+			x.domain([data[0].date, data[data.length - 1].date]);
+			y.domain(d3.extent(data, function(d) { return d[city]; }));
+
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+				.call(xAxis);
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis)
+				.append("text")
+				.attr("transform", "rotate(-90)")
+				.attr("y", 6)
+				.attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("cost");
+
+			svg.append("path")
+				.datum(data)
+				.attr("class", "line")
+				.attr("d", line);
+			
+			var timeout = setTimeout(function () {
+				var a = { date: new Date(), value: 1 };
+				data.push(a);
+
+				
+			}, 2000);
+
+		})();
+	</script>
+}
+
