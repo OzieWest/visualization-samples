@@ -129,7 +129,8 @@
 					})
 					.style("fill", "#fff");
 
-				nodeEnter.append("text")
+				nodeEnter
+					.append("text")
 					.attr("y", function (d) { return -1 * (nodeSize(d.value) + 10); })
 					.attr("dy", ".40em")
 					.attr("text-anchor", function (d) { return d.children || d._children ? "end" : "start"; })

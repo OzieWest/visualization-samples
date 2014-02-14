@@ -8,12 +8,14 @@
 	<link href="~/Content/application.min.css" rel="stylesheet" />
 	<link href="~/Content/Site.css" rel="stylesheet" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.min.css" media="all" rel="stylesheet" type="text/css" />
+	<link href="~/Content/angular.rangeSlider.css" rel="stylesheet" />
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
-	
+	<script src="~/Scripts/angular.rangeSlider.js"></script>
+
 	@RenderSection("style", required: false)
 </head>
 
@@ -69,12 +71,11 @@
 	</div>
 
 	<script type="text/javascript">
-		var app = angular.module('main', []);
+		var app = angular.module('main', ['ui-rangeSlider']);
 		app.value('show', toastr);
 	</script>
 
 	@RenderSection("scripts", required: false)
 	<script src="~/Scripts/collapse.js"></script>
-	
 </body>
 </html>

@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
+using System.Web.WebPages;
+using Microsoft.Ajax.Utilities;
 
 namespace Visualization_Samples.Controllers
 {
@@ -28,8 +33,13 @@ namespace Visualization_Samples.Controllers
 			return View();
 		}
 
-		public ActionResult Charts()
+		public ActionResult PersonTest()
 		{
+			if (!Request.QueryString["id"].IsEmpty())
+			{
+				ViewBag.ID = Request.QueryString["id"];
+			}
+
 			return View();
 		}
 	}

@@ -15,7 +15,7 @@
     <AssemblyName>Visualization Samples</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -39,7 +39,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Hammock.ClientProfile">
+      <HintPath>..\packages\TweetSharp.2.3.1\lib\4.0\Hammock.ClientProfile.dll</HintPath>
+    </Reference>
+    <Reference Include="LinqToTwitter.AspNet">
+      <HintPath>..\..\..\..\_main\LinqToTwitter_20140203\net45\LinqToTwitter.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="LinqToTwitterPcl">
+      <HintPath>..\..\..\..\_main\LinqToTwitter_20140203\net45\LinqToTwitterPcl.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\TweetSharp.2.3.1\lib\4.0\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
@@ -70,9 +83,6 @@
     <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.Mvc.FixedDisplayModes.1.0.0\lib\net40\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http">
     </Reference>
@@ -192,12 +202,74 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\angular.rangeSlider.css" />
+    <Content Include="Scripts\angular.rangeSlider.js" />
+    <Content Include="Scripts\svg.vk.post.js" />
     <Content Include="Content\application.min.css" />
+    <Content Include="Content\bgnoise_lg_dark.png" />
     <Content Include="Content\fontello\css\fontello.css" />
     <Content Include="Content\fontello\font\fontello.svg" />
     <Content Include="Content\fontello\LICENSE.txt" />
     <Content Include="Content\fonts\font-awesome\fontawesome-webfont.svg" />
     <Content Include="Content\fonts\glyphicons\glyphicons-halflings-regular.svg" />
+    <Content Include="Content\nvd3\lib\cie.js" />
+    <Content Include="Content\nvd3\lib\crossfilter.js" />
+    <Content Include="Content\nvd3\lib\crossfilter.min.js" />
+    <Content Include="Content\nvd3\lib\d3.v2.js" />
+    <Content Include="Content\nvd3\lib\d3.v2.min.js" />
+    <Content Include="Content\nvd3\lib\d3.v3.min.js" />
+    <Content Include="Content\nvd3\lib\fisheye.js" />
+    <Content Include="Content\nvd3\lib\hive.js" />
+    <Content Include="Content\nvd3\lib\horizon.js" />
+    <Content Include="Content\nvd3\lib\LICENSE.txt" />
+    <Content Include="Content\nvd3\lib\sankey.js" />
+    <Content Include="Content\nvd3\nv.d3.custom.js" />
+    <Content Include="Content\nvd3\src\core.js" />
+    <Content Include="Content\nvd3\src\intro.js" />
+    <Content Include="Content\nvd3\src\models\axis.js" />
+    <Content Include="Content\nvd3\src\models\backup\bullet.js" />
+    <Content Include="Content\nvd3\src\models\backup\bulletChart.js" />
+    <Content Include="Content\nvd3\src\models\boilerplate.js" />
+    <Content Include="Content\nvd3\src\models\bullet.js" />
+    <Content Include="Content\nvd3\src\models\bulletChart.js" />
+    <Content Include="Content\nvd3\src\models\cumulativeLineChart.js" />
+    <Content Include="Content\nvd3\src\models\discreteBar.js" />
+    <Content Include="Content\nvd3\src\models\discreteBarChart.js" />
+    <Content Include="Content\nvd3\src\models\distribution.js" />
+    <Content Include="Content\nvd3\src\models\historicalBar.js" />
+    <Content Include="Content\nvd3\src\models\indentedTree.js" />
+    <Content Include="Content\nvd3\src\models\legend.js" />
+    <Content Include="Content\nvd3\src\models\line.js" />
+    <Content Include="Content\nvd3\src\models\lineChart.js" />
+    <Content Include="Content\nvd3\src\models\linePlusBarChart.js" />
+    <Content Include="Content\nvd3\src\models\linePlusBarWithFocusChart.js" />
+    <Content Include="Content\nvd3\src\models\lineWithFisheye.js" />
+    <Content Include="Content\nvd3\src\models\lineWithFisheyeChart.js" />
+    <Content Include="Content\nvd3\src\models\lineWithFocusChart.js" />
+    <Content Include="Content\nvd3\src\models\multiBar.js" />
+    <Content Include="Content\nvd3\src\models\multiBarChart.js" />
+    <Content Include="Content\nvd3\src\models\multiBarHorizontal.js" />
+    <Content Include="Content\nvd3\src\models\multiBarHorizontalChart.js" />
+    <Content Include="Content\nvd3\src\models\multiBarTimeSeries.js" />
+    <Content Include="Content\nvd3\src\models\multiBarTimeSeriesChart.js" />
+    <Content Include="Content\nvd3\src\models\multiChart.js" />
+    <Content Include="Content\nvd3\src\models\ohlcBar.js" />
+    <Content Include="Content\nvd3\src\models\parallelCoordinates.js" />
+    <Content Include="Content\nvd3\src\models\pie.js" />
+    <Content Include="Content\nvd3\src\models\pieChart.js" />
+    <Content Include="Content\nvd3\src\models\pieChartTotal.js" />
+    <Content Include="Content\nvd3\src\models\scatter.js" />
+    <Content Include="Content\nvd3\src\models\scatterChart.js" />
+    <Content Include="Content\nvd3\src\models\scatterPlusLineChart.js" />
+    <Content Include="Content\nvd3\src\models\sparkline.js" />
+    <Content Include="Content\nvd3\src\models\sparklinePlus.js" />
+    <Content Include="Content\nvd3\src\models\stackedArea.js" />
+    <Content Include="Content\nvd3\src\models\stackedAreaChart.js" />
+    <Content Include="Content\nvd3\src\nv.d3.css" />
+    <Content Include="Content\nvd3\src\outro.js" />
+    <Content Include="Content\nvd3\src\tooltip.js" />
+    <Content Include="Content\nvd3\src\utils.js" />
+    <Content Include="Content\nvd3\stream_layers.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\fontello\font\fontello.eot" />
@@ -218,6 +290,7 @@
     <Content Include="Content\font\open-sans.woff" />
     <Content Include="Scripts\angular.min.js" />
     <Content Include="Scripts\angular.min.js.map" />
+    <Content Include="Content\nvd3\LICENSE.md" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\collapse.js" />
@@ -241,7 +314,9 @@
     <Content Include="Scripts\sigma\plugins\sigma.plugins.animate.min.js" />
     <Content Include="Scripts\sigma\plugins\sigma.plugins.neighborhoods.min.js" />
     <Content Include="Scripts\sigma\sigma.min.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -269,7 +344,7 @@
     <Content Include="Views\Home\SecondGraph.cshtml" />
     <Content Include="Views\Home\Hexagon.cshtml" />
     <Content Include="Views\Home\Сonfetti.cshtml" />
-    <Content Include="Views\Home\Charts.cshtml" />
+    <Content Include="Views\Home\PersonTest.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -291,16 +366,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>0</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:30680/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+          <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>
