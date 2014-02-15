@@ -194,6 +194,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\DataController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -203,6 +204,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\angular.rangeSlider.css" />
+    <None Include="friends.json" />
     <Content Include="mainApp\app.service.js" />
     <Content Include="mainApp\svg.friend.graph.js" />
     <Content Include="Scripts\angular.rangeSlider.js" />
@@ -294,7 +296,6 @@
     <Content Include="Scripts\angular.min.js.map" />
     <Content Include="Content\nvd3\LICENSE.md" />
     <Content Include="mainApp\app.module.js" />
-    <Content Include="mainApp\miserables.json" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\collapse.js" />
@@ -309,6 +310,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\json_parse.js" />
     <Content Include="Scripts\knockout-2.2.0.debug.js" />
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />

@@ -1,28 +1,24 @@
 ﻿var graph = {
-	w: $("svgmain").parent().width(),
+	w: function () { return $('div[svgfriend]').parent().width(); },
 	h: 500,
-	init: function (userid, data, dist, raduis) {
-		d3.select("svg").remove();
-
+	init: function (one, two, dist, raduis) {
 		var graph = { links: [], nodes: [], };
 
-		var grid = 3;
-		
-		var target = { uid: userid, name: 'target', group: 1 };
-
+		var target = { uid: one.id, name: 'target', group: 1 };
 		graph.nodes.push(target);
-
-		_.each(data, function (e) {
+		_.each(one.f, function (e) {
 			graph.nodes.push({ uid: e.uid, name: e.last_name + ' ' + e.first_name, group: 2 });
 			graph.links.push({ source: target.uid, target: e.uid, value: 1 });
-
-			//if (typeof e.friends != 'undefined' && e.friends.length != 0) {
-			//	grid++;
-			//	_.each(e.friends, function (d) {
-			//		graph.nodes.push({ uid: d, name: e.last_name + ' ' + e.first_name, group: grid });
-			//		graph.links.push({ source: e.uid, target: d, value: 1 });
-			//	});
-			//}
+		});
+		
+		var enemy = { uid: two.id, name: 'enemy', group: 3 };
+		var m = _.filter(graph.nodes, function (n) { if (n.uid == enemy.uid) return n; }).length;
+		if (m == 0) graph.nodes.push(enemy);
+		
+		_.each(two.f, function (e) {
+			var m = _.filter(graph.nodes, function (n) { if (n.uid == e.uid) return n; }).length;
+			if (m == 0) graph.nodes.push({ uid: e.uid, name: e.last_name + ' ' + e.first_name, group: 4 });
+			graph.links.push({ source: enemy.uid, target: e.uid, value: 1 });
 		});
 
 		var color = d3.scale.category20();
@@ -30,10 +26,10 @@
 		var force = d3.layout.force()
 			.linkDistance(dist)
 			.linkStrength(5)
-			.size([this.w, this.h]);
+			.size([this.w(), this.h]);
 
-		var svg = d3.select("svgmain").append("svg")
-			.attr("width", this.w)
+		var svg = d3.select('div[svgfriend]').append("svg")
+			.attr("width", this.w())
 			.attr("height", this.h);
 
 		this.create(graph, color, force, svg, raduis);

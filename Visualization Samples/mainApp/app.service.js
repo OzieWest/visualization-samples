@@ -47,17 +47,9 @@ mainService.factory('vkService', function ($http, $q) {
 			});
 			return deferred.promise;
 		},
-		friendsGroupGet: function (_userIds) {
-			var calls = [];
-			_.each(_userIds, function (e) {
-				calls.push(defCall($q, $http, e));
-			});
-			
-			return $q.all(calls);
-		},
 		usersGet: function (_uids) {
 			var deferred = $q.defer();
-			var path = ROOT('users.get') + '&uids=' + _uids;
+			var path = ROOT('users.get') + '&uids=' + _uids + '&fields=sex,bdate,city,country,lists,screen_name,has_mobile,contacts,education,universities,schools,can_post,can_see_all_posts,can_write_private_message,status,last_seen,relation,counters,nickname=';
 			var p = $http.jsonp(path + '&callback=JSON_CALLBACK');
 			p.success(function (data) {
 				console.info('usersGet', 'return', data.response);
@@ -65,6 +57,23 @@ mainService.factory('vkService', function ($http, $q) {
 			});
 			p.error(function (err) {
 				console.error('usersGet error', err);
+				deferred.reject();
+			});
+			return deferred.promise;
+		}
+	};
+});
+
+mainService.factory('testService', function ($http, $q) {
+	return {
+		friendsGroupGet: function () {
+			var deferred = $q.defer();
+			var p = $http.get('../api/test/get');
+			p.success(function (data) {
+				deferred.resolve(data);
+			});
+			p.error(function (err) {
+				console.error('friendsGroupGet', err);
 				deferred.reject();
 			});
 			return deferred.promise;

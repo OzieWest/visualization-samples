@@ -17,19 +17,20 @@ var confetti = {
 			return _.filter(_scope.profile.posts, check);
 		};
 
-		d3.select("svg").remove();
+		d3.select("svg[name='posts'] ").remove();
 		
 		if (data().length != 0) {
 			var dotscale = parseInt(_scope.profile.dotconfig.scale);
 			var dist = parseInt(_scope.profile.dotconfig.dist);
 
-			var w = $("svgmain").parent().width(),
+			var w = $('div[svgposts]').parent().width(),
 				h = 500,
 				nodes = [];
 
-			var svg = d3.select("svgmain").append("svg")
+			var svg = d3.select('div[svgposts]').append("svg")
 				.attr("width", w)
-				.attr("height", h);
+				.attr("height", h)
+				.attr("name", 'posts');
 
 			var force = d3.layout.force()
 				.charge(-dist)
