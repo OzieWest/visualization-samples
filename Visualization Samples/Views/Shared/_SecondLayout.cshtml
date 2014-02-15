@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>@ViewBag.Title - Визуализации данных</title>
+	<link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<meta name="viewport" content="width=device-width" />
+	<link href="~/Content/application.min.css" rel="stylesheet" />
+	<link href="~/Content/Site.css" rel="stylesheet" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.min.css" media="all" rel="stylesheet" type="text/css" />
+	<link href="~/Content/angular.rangeSlider.css" rel="stylesheet" />
+
+	@RenderSection("style", required: false)
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
+	<script src="http://underscorejs.org/underscore-min.js"></script>
+
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+	<script src="~/Scripts/ui-bootstrap-tpls-0.10.0.min.js"></script>
+	<script src="~/Scripts/angular.rangeSlider.js"></script>
+
+</head>
+
+<body class="background-dark">
+
+	<div class="logo hidden-print">
+		<h4>Visualizer <strong>@ViewBag.Title</strong></h4>
+	</div>
+
+	<header class="page-header">
+		<div class="navbar">
+			<ul class="nav navbar-nav navbar-right pull-right">
+				<li class="hidden-xs"><a href="https://github.com/soramusoka" target="_blank"><i class="fa fa-github"></i></a></li>
+				<li class="divider"></li>
+				<li class="hidden-xs"><a href="https://twitter.com/soramusoka" target="_blank"><i class="fa fa-twitter"></i></a></li>
+				<li class="hidden-xs"><a href="https://www.facebook.com/artyem.kolosovich" target="_blank"><i class="fa fa-facebook"></i></a></li>
+				<li class="hidden-xs"><a href="http://vk.com/sora_musoka" target="_blank"><i class="fa fa-vk"></i></a></li>
+			</ul>
+		</div>
+	</header>
+
+	<div class="content container">
+		<div class="row hidden-print">
+			<div class="col-md-12">
+				@RenderSection("header", required: true)
+			</div>
+		</div>
+		<div class="row" ng-app="vis.module">
+			<div class="col-md-12">
+				<section class="widget">
+					@RenderBody()
+				</section>
+			</div>
+		</div>
+	</div>
+
+	<script src="~/mainApp/app.module.js"></script>
+	<script src="~/mainApp/app.service.js"></script>
+
+
+	@RenderSection("scripts", required: false)
+	<script src="~/Scripts/collapse.js"></script>
+</body>
+</html>

@@ -40,7 +40,7 @@ namespace Visualization_Samples.Controllers
 				ViewBag.ID = Request.QueryString["id"];
 			}
 
-			return View();
+			return View("PersonTest", "_SecondLayout");
 		}
 	}
 }

@@ -9,14 +9,17 @@
 	<link href="~/Content/Site.css" rel="stylesheet" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.min.css" media="all" rel="stylesheet" type="text/css" />
 	<link href="~/Content/angular.rangeSlider.css" rel="stylesheet" />
+	
+	@RenderSection("style", required: false)
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.min.js"></script>
+	<script src="http://underscorejs.org/underscore-min.js"></script>
+	
 	<script src="http://d3js.org/d3.v3.min.js"></script>
-	<script src="~/Scripts/angular.rangeSlider.js"></script>
 
-	@RenderSection("style", required: false)
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+	<script src="~/Scripts/angular.rangeSlider.js"></script>
 </head>
 
 <body class="background-dark">
@@ -34,7 +37,7 @@
 					<li><a href='@Url.Action("Index", "Home")'>Simple Tree</a></li>
 					<li><a href='@Url.Action("SecondGraph", "Home")'>Simple Graph</a></li>
 					<li><a href='@Url.Action("Hexagon", "Home")'>Hexagon</a></li>
-					<li><a href='@Url.Action("Сonfetti", "Home")'>Сonfetti</a></li>
+					<li><a href='@Url.Action("Сonfetti", "Home")'>Сonfetti test</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -60,7 +63,7 @@
 					@RenderSection("header", required: true)
 				</div>
 			</div>
-			<div class="row" ng-app="main">
+			<div class="row" ng-app="vis.module">
 				<div class="col-md-12">
 					<section class="widget">
 						@RenderBody()
@@ -69,11 +72,9 @@
 			</div>
 		</div>
 	</div>
-
-	<script type="text/javascript">
-		var app = angular.module('main', ['ui-rangeSlider']);
-		app.value('show', toastr);
-	</script>
+	<script src="~/mainApp/app.module.js"></script>
+	<script src="~/mainApp/app.service.js"></script>
+	
 
 	@RenderSection("scripts", required: false)
 	<script src="~/Scripts/collapse.js"></script>

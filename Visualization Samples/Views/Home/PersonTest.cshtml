@@ -14,6 +14,40 @@
 			height: 28px;
 			font-size: 16px;
 		}
+
+		.post {
+			fill: rgb(0, 184, 255);
+		}
+
+			.post:hover, .copy:hover {
+				stroke: black;
+			}
+
+		.copy {
+			fill: orange;
+		}
+
+		.col_1, .col_2, .col_3 {
+			width: 80px;
+		}
+
+		.ngrs-range-slider {
+			margin: 0 !important;
+		}
+
+		.nav, .pagination, .carousel, .panel-title a {
+			cursor: pointer;
+		}
+
+		.node {
+			stroke: #fff;
+			stroke-width: 1.5px;
+		}
+
+		.link {
+			fill: none;
+			stroke: #bbb;
+		}
 	</style>
 }
 
@@ -22,138 +56,174 @@
 	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
 }
 
-
-
 <div ng-controller="treeController">
-	<div class="row">
-		<div class="col-sm-3">
-			<div style="margin-bottom: 10px;">
-				<select ng-disabled="posts.length != 0" ng-model="currentPerson" ng-options="f.last_name + ' ' + f.first_name for f in friends | orderBy:['last_name']"></select>
-				<a ng-show="posts.length == 0" class="btn btn-success btn-block" ng-click="loadPosts()">Load data</a>
-				<a ng-show="posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">Clear data</a>
-				<a ng-show="posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">by Likes</a>
-				<a ng-show="posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">by Comments</a>
-				<a ng-show="posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">by Reposts</a>
-			</div>
-			<table class="table table-bordered table-striped">
-				<tr>
-					<td>user</td>
-					<td>original</td>
-					<td>reposts</td>
-				</tr>
-				<tr ng-repeat="h in history track by $index">
-					<td>{{ h.user }}</td>
-					<td>{{ h.o }}</td>
-					<td>{{ h.r }}</td>
-				</tr>
-			</table>
-		</div>
-		<div class="col-sm-9">
-			<ol class="breadcrumb">
-				<li class="active">sorting by {{ posttype }}</li>
-				<li>original: {{ countPost('post').length }}</li>
-				<li>reposts: {{ countPost('copy').length }}</li>
-			</ol>
 
-			<div>
-				<svgmain />
-			</div>
+	<progressbar ng-show="conf.isBusy" class="progress-striped active" value="100" type="info">loading...</progressbar>
+
+	<tabset>
+		<tab heading="User">
+			<button class="btn btn-info" ng-click="createGraph()">Create Graph</button>
+		</tab>
+		<tab heading="Posts">
 			<div class="row">
-				<div class="col-sm-6">
-					<h4>Dot scale:</h4>
-					<div range-slider min="0" max="5" model-max="dotconfig.scale" pin-handle="min"></div>
+				<div class="col-sm-3">
+					<div style="margin-bottom: 10px;">
+						<select ng-disabled="profile.posts.length != 0" ng-model="profile.current" ng-options="f.last_name + ' ' + f.first_name for f in friends | orderBy:['last_name']" style="margin-bottom: 5px;"></select>
+						<a ng-show="profile.posts.length == 0" class="btn btn-info btn-block" ng-click="loadPosts()">
+							<i class="fa fa-cloud-download"></i>Load posts
+						</a>
+						<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
+							<i class="glyphicon glyphicon-remove-circle"></i>Clear data
+						</a>
+						<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">
+							<i class="fa fa-thumbs-up"></i>by Likes
+						</a>
+						<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">
+							<i class="eicon eicon-comment"></i>by Comments
+						</a>
+						<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">
+							<i class="fa fa-retweet"></i>by Reposts
+						</a>
+					</div>
+					<table class="table table-bordered table-striped" ng-show="history.length != 0">
+						<tr>
+							<td>user</td>
+							<td>original</td>
+							<td>reposts</td>
+						</tr>
+						<tr ng-repeat="h in history track by $index">
+							<td>{{ h.user }}</td>
+							<td>{{ h.o }}</td>
+							<td>{{ h.r }}</td>
+						</tr>
+					</table>
 				</div>
-				<div class="col-sm-6">
-					<h4>Dot distance:</h4>
-					<div range-slider min="20" max="60" model-max="dotconfig.dist" pin-handle="min"></div>
+				<div class="col-sm-9">
+					<ol class="breadcrumb" ng-hide="profile.posts.length == 0">
+						<li class="active">sorting by {{ profile.posttype }}</li>
+						<li>original: {{ countPost('post').length }}</li>
+						<li>reposts: {{ countPost('copy').length }}</li>
+					</ol>
+
+					<div class="row">
+						<div class="col-sm-6">
+							<h4>Dot scale:</h4>
+							<div class="row" style="margin-bottom: 10px;">
+								<div class="col-sm-3">
+									<input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" />
+								</div>
+								<div class="col-sm-9">
+									<div range-slider min="0" max="50" model-max="profile.dotconfig.scale" pin-handle="min"></div>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<h4>Dot distance:</h4>
+							<div class="row" style="margin-bottom: 10px;">
+								<div class="col-sm-3">
+									<input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" />
+								</div>
+								<div class="col-sm-9">
+									<div range-slider min="20" max="400" model-max="profile.dotconfig.dist" pin-handle="min" step="50"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-12">
+							<h4>Dot min-max:</h4>
+							<div class="row" style="margin-bottom: 10px;">
+								<div class="col-sm-3">
+									<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
+									<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
+								</div>
+								<div class="col-sm-9">
+									<div range-slider
+									     min="conf.low"
+									     max="conf.high"
+									     model-min="profile.dotconfig.low"
+									     model-max="profile.dotconfig.high"
+									     step="5">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<table class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
+						<tr>
+							<td class="col_1">post id</td>
+							<td class="col_2">val</td>
+							<td class="col_3">type</td>
+							<td class="col_4">
+								<a ng-click="clearDots()" class="btn btn-inverse btn-block">Clear dots</a>
+							</td>
+						</tr>
+						<tr ng-repeat="d in profile.dots track by $index">
+							<td class="col_1">{{ d.postid }}</td>
+							<td class="col_2">{{ d.val }}</td>
+							<td class="col_3">{{ d.type }}</td>
+							<td class="col_4">{{ d.url }}</td>
+						</tr>
+					</table>
+
 				</div>
 			</div>
-
-
-		</div>
+		</tab>
+	</tabset>
+	
+	<div style="margin-top: 10px;">
+		<svgmain />
 	</div>
+
 </div>
 
 @section scripts
 {
-	<script src="http://underscorejs.org/underscore-min.js"></script>
-	<script src="~/Scripts/svg.vk.post.js"></script>
+	<script src="~/mainApp/svg.vk.post.js"></script>
+	<script src="~/mainApp/svg.friend.graph.js"></script>
 
 	<script type="text/javascript">
 		'use sctrict';
+		
+		var bigtable = [];
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
-		var vk_id = '@Html.Raw(ViewBag.ID)';
+		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
-		app.factory('vk', function ($http, $q) {
-			var ROOT = function (method) { return 'https://api.vk.com/method/' + method + '?access_token=' + token; };
-			return {
-				wallGet: function (_ownerId, _offset, _count, _filter, _extended) {
-					var deferred = $q.defer();
-					var path = ROOT('wall.get') + '&count=' + _count + '&offset=' + _offset + '&owner_id=' + _ownerId;
-					var p = $http.jsonp(path + '&callback=JSON_CALLBACK');
-					p.success(function (data) {
-						deferred.resolve(data.response);
-						console.info('wallGet', 'return', data.response);
+		mainModule.controller('treeController', function($scope, vkService, show, vk_id) {
+			$scope.history = [];
+			$scope.conf = { low: 0, high: 700, isBusy: true };
+
+			$scope.profile = {
+				current: {},
+				posts: [],
+				posttype: 'likes',
+				dots: [],
+				dotconfig: { scale: 5, dist: 50, low: $scope.conf.low, high: 50 }
+			};
+
+			/* Загружает список постов по ID пользователя */
+			$scope.loadPosts = function() {
+				if (!_.isEmpty($scope.profile.current)) {
+					$scope.conf.isBusy = true;
+					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function(r) {
+						var d = _.filter(r, function(e) { if (!_.isEmpty(e)) return e; });
+						$scope.profile.posts = angular.copy(d);
+
+						$scope.showConfetti($scope.profile.posttype);
+						addToHistory();
+						$scope.conf.isBusy = false;
 					});
-					p.error(function (err) {
-						console.error('wallGet error', err);
-						deferred.reject();
-					});
-					return deferred.promise;
-				},
-				friendsGet: function (_userId, _fields) {
-					var deferred = $q.defer();
-					var path = ROOT('friends.get') + '&user_id=' + _userId + "&fields=" + _fields;
-					var p = $http.jsonp(path + '&callback=JSON_CALLBACK');
-					p.success(function (data) {
-						console.info('friendsGet', 'return', data.response);
-						deferred.resolve(data.response);
-					});
-					p.error(function (err) {
-						console.error('friendsGet error', err);
-						deferred.reject();
-					});
-					return deferred.promise;
-				},
-				usersGet: function (_uids) {
-					var deferred = $q.defer();
-					var path = ROOT('users.get') + '&uids=' + _uids;
-					var p = $http.jsonp(path + '&callback=JSON_CALLBACK');
-					p.success(function (data) {
-						console.info('usersGet', 'return', data.response);
-						deferred.resolve(data.response);
-					});
-					p.error(function (err) {
-						console.error('usersGet error', err);
-						deferred.reject();
-					});
-					return deferred.promise;
 				}
 			};
-		});
 
-		app.controller('treeController', function ($scope, vk, show) {
-			$scope.history = [];
-			$scope.dotconfig = { scale: 5, dist: 50 };
-			$scope.dots = [];
-
-			$scope.currentPerson = '';
-			$scope.posts = [];
-			$scope.posttype = 'likes';
-
-			$scope.loadPosts = function () {
-				vk.wallGet($scope.currentPerson.user_id, 0, 100, 1, 1).then(function (r) {
-					var d = _.filter(r, function (e) { if (!_.isEmpty(e)) return e; });
-					$scope.posts = angular.copy(d);
-					$scope.showConfetti($scope.posttype);
-					addToHistory();
-				});
-			};
+			/* Добавляет лог в историю проверок */
 
 			function addToHistory() {
 				var log = {
-					user: $scope.currentPerson.last_name + ' ' + $scope.currentPerson.first_name,
+					user: $scope.profile.current.last_name + ' ' + $scope.profile.current.first_name,
 					o: $scope.countPost('post').length,
 					r: $scope.countPost('copy').length
 				};
@@ -161,38 +231,62 @@
 				$scope.history.push(log);
 			}
 
-			$scope.showConfetti = function (_type) {
-				$scope.posttype = _type;
-				confetti($scope.currentPerson.user_id, $scope.posts, $scope.posttype, $scope.dotconfig);
+			/* Удаление постов */
+			$scope.clearPosts = function() {
+				$scope.profile.posts = [];
 			};
 
-			$scope.clearPosts = function () {
-				$scope.posts = [];
+			/* Удаление точек */
+			$scope.clearDots = function() {
+				$scope.profile.dots = [];
 			};
 
-			$scope.countPost = function (_type) {
-				return _.filter($scope.posts, function (e) {
+			/* Возвращает количество постов по типу параметра */
+			$scope.countPost = function(_type) {
+				return _.filter($scope.profile.posts, function(e) {
 					if (e.post_type == _type) return e;
 				});
 			};
 
-			//-------------------------------------------
-			$scope.friends = [];
-			$scope.getFriends = function (id) {
-				if (!_.isEmpty(id)) {
-					vk.usersGet(id).then(function (_userInfo) {
-						_userInfo.user_id = _userInfo.uid;
-						_userInfo.online = 0;
+			/* Строит шаблон конфети */
+			$scope.showConfetti = function(_type) {
+				$scope.profile.posttype = _type;
+				confetti.init($scope);
+			};
 
-						vk.friendsGet(id, 'first_name').then(function (r) {
-							$scope.friends = angular.copy(r);
-							$scope.friends.push(_userInfo);
-						});
+			/* FRIENDS */
+			$scope.friends = [];
+			$scope.getFriends = function(id) {
+				if (!_.isEmpty(id)) {
+					$scope.conf.isBusy = true;
+					vkService.friendsGet(id, 'last_name').then(function(r) {
+						$scope.friends = angular.copy(r);
 					});
 				}
 			};
 
-			// INIT -----------------
+			/* INIT */
 			$scope.getFriends(vk_id);
-		}); </script>
+
+			$scope.createGraph = function() {
+				var mapedIds = _.map($scope.friends, function(e) { return e.user_id; });
+
+				var testMass = [];
+				testMass.push(mapedIds[0]);
+				testMass.push(mapedIds[1]);
+				testMass.push(mapedIds[2]);
+				testMass.push(mapedIds[3]);
+				testMass.push(mapedIds[4]);
+				testMass.push(mapedIds[5]);
+				testMass.push(mapedIds[6]);
+
+				vkService.friendsGroupGet(testMass).then(function(r) {
+					_.each(r, function(e, i) { $scope.friends[i].friends = angular.copy(e); });
+					graph.init(vk_id, $scope.friends, 50, 10);
+					bigtable = angular.copy(r);
+				}).then(function () { $scope.conf.isBusy = false; });
+			};
+		});
+
+	</script>
 }

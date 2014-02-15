@@ -203,8 +203,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\angular.rangeSlider.css" />
+    <Content Include="mainApp\app.service.js" />
+    <Content Include="mainApp\svg.friend.graph.js" />
     <Content Include="Scripts\angular.rangeSlider.js" />
-    <Content Include="Scripts\svg.vk.post.js" />
+    <Content Include="mainApp\svg.vk.post.js" />
     <Content Include="Content\application.min.css" />
     <Content Include="Content\bgnoise_lg_dark.png" />
     <Content Include="Content\fontello\css\fontello.css" />
@@ -291,6 +293,8 @@
     <Content Include="Scripts\angular.min.js" />
     <Content Include="Scripts\angular.min.js.map" />
     <Content Include="Content\nvd3\LICENSE.md" />
+    <Content Include="mainApp\app.module.js" />
+    <Content Include="mainApp\miserables.json" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\angular-mocks.js" />
     <Content Include="Scripts\collapse.js" />
@@ -314,6 +318,7 @@
     <Content Include="Scripts\sigma\plugins\sigma.plugins.animate.min.js" />
     <Content Include="Scripts\sigma\plugins\sigma.plugins.neighborhoods.min.js" />
     <Content Include="Scripts\sigma\sigma.min.js" />
+    <Content Include="Scripts\ui-bootstrap-tpls-0.10.0.min.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -345,6 +350,7 @@
     <Content Include="Views\Home\Hexagon.cshtml" />
     <Content Include="Views\Home\Сonfetti.cshtml" />
     <Content Include="Views\Home\PersonTest.cshtml" />
+    <Content Include="Views\Shared\_SecondLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
