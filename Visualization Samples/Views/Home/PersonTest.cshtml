@@ -62,81 +62,28 @@
 
 	<tabset>
 		<tab heading="User">
+			<input type="text" ng-model="profile.target.id" /> <button class="btn btn-info" ng-click="testGraph()">Test info</button>
+			<div svgfriend></div>
 			<div class="row">
-				<div class="col-sm-3">
-					<table class="table table-bordered table-striped">
-						<tr>
-							<td>Name</td><td>{{ profile.person.last_name }} {{ profile.person.first_name }}</td>
-						</tr>
-						<tr>
-							<td>Screen name</td><td>{{ profile.person.screen_name }}</td>
-						</tr>
-						<tr>
-							<td>Date</td><td>{{ profile.person.bdate }}</td>
-						</tr>
-						<tr>
-							<td>Relation</td><td>{{ profile.person.relation }}</td>
-						</tr>
-						<tr>
-							<td>Graduation</td><td>{{ profile.person.graduation }}</td>
-						</tr>
-						<tr>
-							<td>Status</td><td>{{ profile.person.status }}</td>
-						</tr>
-						<tr>
-							<td>Albums</td><td>{{ profile.person.counters.albums }}</td>
-						</tr>
-						<tr>
-							<td>Videos</td><td>{{ profile.person.counters.videos }}</td>
-						</tr>
-						<tr>
-							<td>Audios</td><td>{{ profile.person.counters.audios }}</td>
-						</tr>
-						<tr>
-							<td>Notes</td><td>{{ profile.person.counters.notes }}</td>
-						</tr>
-						<tr>
-							<td>Photos</td><td>{{ profile.person.counters.photos }}</td>
-						</tr>
-						<tr>
-							<td>Groups</td><td>{{ profile.person.counters.groups }}</td>
-						</tr>
-						<tr>
-							<td>Friends</td><td>{{ profile.person.counters.friends }}</td>
-						</tr>
-						<tr>
-							<td>User_videos</td><td>{{ profile.person.counters.user_videos }}</td>
-						</tr>
-						<tr>
-							<td>Followers</td><td>{{ profile.person.counters.followers }}</td>
-						</tr>
-					</table>
-					<input type="text" ng-model="profile.target.id" /> <button class="btn btn-info" ng-click="compareWith()">Test info</button>
-				</div>
-				<div class="col-sm-9">
-					<div svgfriend></div>
-					<div class="row">
-						<div class="col-sm-6">
-							<h4>Dot scale:</h4>
-							<div class="row" style="margin-bottom: 10px;">
-								<div class="col-sm-3">
-									<input type="text" ng-model="profile.graph.scale" style="width: 80px;" />
-								</div>
-								<div class="col-sm-9">
-									<div range-slider min="2" max="20" model-max="profile.graph.scale" pin-handle="min" step="2"></div>
-								</div>
-							</div>
+				<div class="col-sm-6">
+					<h4>Dot scale:</h4>
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-3">
+							<input type="text" ng-model="profile.graph.scale" style="width: 80px;" />
 						</div>
-						<div class="col-sm-6">
-							<h4>Dot distance:</h4>
-							<div class="row" style="margin-bottom: 10px;">
-								<div class="col-sm-3">
-									<input type="text" ng-model="profile.graph.dist" style="width: 80px;" />
-								</div>
-								<div class="col-sm-9">
-									<div range-slider min="20" max="200" model-max="profile.graph.dist" pin-handle="min" step="20"></div>
-								</div>
-							</div>
+						<div class="col-sm-9">
+							<div range-slider min="2" max="20" model-max="profile.graph.scale" pin-handle="min" step="2"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<h4>Dot distance:</h4>
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-3">
+							<input type="text" ng-model="profile.graph.dist" style="width: 80px;" />
+						</div>
+						<div class="col-sm-9">
+							<div range-slider min="20" max="200" model-max="profile.graph.dist" pin-handle="min" step="20"></div>
 						</div>
 					</div>
 				</div>
@@ -245,25 +192,24 @@
 {
 	<script src="~/mainApp/svg.vk.post.js"></script>
 	<script src="~/mainApp/svg.friend.graph.js"></script>
+	<script src="~/Scripts/localForage/localforage.js"></script>
 
 	<script type="text/javascript">
 		'use sctrict';
 
-		$(document).ready(function () {
-			$('#ctrlzone').show();
-		});
+		$(document).ready(function () { $('#ctrlzone').show(); });
 
-		var bigtable = [];
+		var bigdata = [];
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
-		mainModule.controller('treeController', function ($scope, vkService, testService, show, vk_id) {
+		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
 			$scope.conf = { low: 0, high: 700, isBusy: true };
 
 			$scope.profile = {
 				person: {},
-				target: {id: 0},
+				target: { id: 0 },
 				current: {},
 				posts: [],
 				posttype: 'likes',
@@ -273,11 +219,11 @@
 			};
 
 			/* Загружает список постов по ID пользователя */
-			$scope.loadPosts = function () {
+			$scope.loadPosts = function() {
 				if (!_.isEmpty($scope.profile.current)) {
 					$scope.conf.isBusy = true;
-					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function (r) {
-						var d = _.filter(r, function (e) { if (!_.isEmpty(e)) return e; });
+					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function(r) {
+						var d = _.filter(r, function(e) { if (!_.isEmpty(e)) return e; });
 						$scope.profile.posts = angular.copy(d);
 
 						$scope.showConfetti($scope.profile.posttype);
@@ -287,72 +233,56 @@
 			};
 
 			/* Удаление постов */
-			$scope.clearPosts = function () {
-				$scope.profile.posts = [];
-			};
+			$scope.clearPosts = function() { $scope.profile.posts = []; };
 
 			/* Удаление точек */
-			$scope.clearDots = function () {
-				$scope.profile.dots = [];
-			};
+			$scope.clearDots = function() { $scope.profile.dots = []; };
 
 			/* Возвращает количество постов по типу параметра */
-			$scope.countPost = function (_type) {
-				return _.filter($scope.profile.posts, function (e) { if (e.post_type == _type) return e; });
+			$scope.countPost = function(_type) {
+				return _.filter($scope.profile.posts, function(e) { if (e.post_type == _type) return e; });
 			};
 
 			/* Строит шаблон конфети */
-			$scope.showConfetti = function (_type) {
+			$scope.showConfetti = function(_type) {
 				$scope.profile.posttype = _type;
 				confetti.init($scope);
 			};
 
 			/* FRIENDS */
 			$scope.friends = [];
-			$scope.getFriends = function (id) {
+			$scope.getFriends = function(id) {
 				if (!_.isEmpty(id)) {
 					$scope.conf.isBusy = true;
-					vkService.usersGet(id).then(function (r) {
-						$scope.profile.person = angular.copy(r[0]);
+					vkService.usersGet(id).then(function(u) {
+						$scope.profile.person = angular.copy(u[0]);
 
-						vkService.friendsGet(id, 'last_name').then(function (r) {
+						vkService.friendsGet(id, 'last_name').then(function(r) {
 							$scope.friends = angular.copy(r);
-
-						}).then(function () { $scope.conf.isBusy = false; });
+							localforage.setItem('users', angular.copy(r));
+						}).then(function() { $scope.conf.isBusy = false; });
 					});
 				}
 			};
 
-			$scope.compares = [];
-			$scope.compareWith = function () {
-				var id = $scope.profile.target.id;
-				$scope.conf.isBusy = true;
-				vkService.usersGet(id).then(function (r) {
-					$scope.profile.target = angular.copy(r[0]);
-
-					vkService.friendsGet(id, 'last_name').then(function (data) {
-						$scope.compares = angular.copy(data);
-						graph.init({ id: vk_id, f: $scope.friends }, { id: id, f: $scope.compares }, 30, 5);
-
-					}).then(function () { $scope.conf.isBusy = false; });
-				});
-			};
-
 			/* INIT */
 			$scope.getFriends(vk_id);
+			var time = 1000;
 
 			$scope.testGraph = function () {
-				testService.friendsGroupGet().then(function (r) {
-					var temp = JSON.parse(r);
-					temp = JSON.parse(temp);
-					_.each(temp, function (e, i) { $scope.friends[i].friends = angular.copy(e); });
-					//graph.init(vk_id, $scope.friends, $scope.profile.graph.dist, $scope.profile.graph.scale);
-
-					bigtable = angular.copy($scope.friends);
-				}).then(function () { $scope.conf.isBusy = false; });
+				var idList = _.map($scope.friends, function (r) { return r.uid; });
+				_.each(idList, function (id) {
+					time += 3000;
+					$timeout(function () {
+						vkService.friendsGet(id, '').then(function (r) {
+							bigdata.push(r);
+							localforage.setItem(id, r, function () { console.count('user'); });
+						});
+					}, time);
+				});
 			};
 		});
-		//1563369
+	//1563369
 		//var mainMass = _.compact(_.map(bigtable, function(e) { if(typeof e.friends != 'undefined') { return {uid: e.uid, f: _.map(e.friends, function(f) { return f.uid; })}; } }));
 	</script>
 }

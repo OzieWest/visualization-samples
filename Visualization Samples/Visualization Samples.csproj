@@ -204,7 +204,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\angular.rangeSlider.css" />
-    <None Include="friends.json" />
     <Content Include="mainApp\app.service.js" />
     <Content Include="mainApp\svg.friend.graph.js" />
     <Content Include="Scripts\angular.rangeSlider.js" />
@@ -310,9 +309,10 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\json_parse.js" />
     <Content Include="Scripts\knockout-2.2.0.debug.js" />
     <Content Include="Scripts\knockout-2.2.0.js" />
+    <Content Include="Scripts\localForage\localforage.js" />
+    <Content Include="Scripts\localForage\localforage.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\sigma\plugins\sigma.layout.forceAtlas2.min.js" />
     <Content Include="Scripts\sigma\plugins\sigma.parsers.gexf.min.js" />
