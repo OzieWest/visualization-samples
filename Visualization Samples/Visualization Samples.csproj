@@ -350,8 +350,9 @@
     <Content Include="Views\Home\SecondGraph.cshtml" />
     <Content Include="Views\Home\Hexagon.cshtml" />
     <Content Include="Views\Home\Сonfetti.cshtml" />
-    <Content Include="Views\Home\PersonTest.cshtml" />
+    <Content Include="Views\Home\VkPost.cshtml" />
     <Content Include="Views\Shared\_SecondLayout.cshtml" />
+    <Content Include="Views\Home\VkProfile.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

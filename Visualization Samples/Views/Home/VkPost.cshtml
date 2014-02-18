@@ -1,0 +1,231 @@
+﻿@using System.Configuration
+@{
+	ViewBag.Title = "D3.js";
+}
+
+@section style{
+	<style>
+		svg {
+			border: 1px solid rgb(160, 160, 160);
+		}
+
+		select {
+			width: 100%;
+			height: 28px;
+			font-size: 16px;
+		}
+
+		.post {
+			fill: rgb(0, 184, 255);
+		}
+
+			.post:hover, .copy:hover {
+				stroke: black;
+			}
+
+		.copy {
+			fill: orange;
+		}
+
+		.col_1, .col_2, .col_3 {
+			width: 80px;
+		}
+
+		.ngrs-range-slider {
+			margin: 0 !important;
+		}
+
+		.nav, .pagination, .carousel, .panel-title a {
+			cursor: pointer;
+		}
+
+		.node {
+			stroke: #fff;
+			stroke-width: 1.5px;
+		}
+
+		.link {
+		}
+	</style>
+}
+
+@section header
+{
+	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
+}
+
+<div id="ctrlzone" ng-controller="treeController" style="display: none;">
+
+	<progressbar ng-show="conf.isBusy" class="progress-striped active" value="100" type="info">loading...</progressbar>
+
+	<div class="row">
+		<div class="col-sm-3">
+			<div style="margin-bottom: 10px;">
+				<select ng-disabled="profile.posts.length != 0" ng-model="profile.current" ng-options="f.last_name + ' ' + f.first_name for f in friends | orderBy:['last_name']" style="margin-bottom: 5px;"></select>
+				<a ng-show="profile.posts.length == 0" class="btn btn-info btn-block" ng-click="loadPosts()">
+					<i class="fa fa-cloud-download"></i>Load posts
+				</a>
+				<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
+					<i class="glyphicon glyphicon-remove-circle"></i>Clear data
+				</a>
+				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">
+					<i class="fa fa-thumbs-up"></i>by Likes
+				</a>
+				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">
+					<i class="eicon eicon-comment"></i>by Comments
+				</a>
+				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">
+					<i class="fa fa-retweet"></i>by Reposts
+				</a>
+			</div>
+		</div>
+		<div class="col-sm-9">
+			<ol class="breadcrumb" ng-hide="profile.posts.length == 0">
+				<li class="active">sorting by {{ profile.posttype }}</li>
+				<li>original: {{ countPost('post').length }}</li>
+				<li>reposts: {{ countPost('copy').length }}</li>
+			</ol>
+
+			<div class="row">
+				<div class="col-sm-6">
+					<h4>Dot scale:</h4>
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-3">
+							<input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" />
+						</div>
+						<div class="col-sm-9">
+							<div range-slider min="0" max="50" model-max="profile.dotconfig.scale" pin-handle="min"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<h4>Dot distance:</h4>
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-3">
+							<input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" />
+						</div>
+						<div class="col-sm-9">
+							<div range-slider min="20" max="400" model-max="profile.dotconfig.dist" pin-handle="min" step="50"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row" style="margin-bottom: 10px;">
+				<div class="col-sm-12">
+					<h4>Dot min-max:</h4>
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="col-sm-3">
+							<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
+							<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
+						</div>
+						<div class="col-sm-9">
+							<div range-slider
+								min="conf.low"
+								max="conf.high"
+								model-min="profile.dotconfig.low"
+								model-max="profile.dotconfig.high"
+								step="5">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div svgposts></div>
+
+	<table style="margin-top: 10px;" class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
+		<tr>
+			<td class="col_1">post id</td>
+			<td class="col_2">val</td>
+			<td class="col_3">type</td>
+			<td class="col_4">
+				<a ng-click="clearDots()" class="btn btn-inverse btn-block">Clear dots</a>
+			</td>
+		</tr>
+		<tr ng-repeat="d in profile.dots track by $index">
+			<td class="col_1">{{ d.postid }}</td>
+			<td class="col_2">{{ d.val }}</td>
+			<td class="col_3">{{ d.type }}</td>
+			<td class="col_4">{{ d.url }}</td>
+		</tr>
+	</table>
+
+</div>
+
+@section scripts
+{
+	<script src="~/mainApp/svg.vk.post.js"></script>
+
+	<script type="text/javascript">
+		'use sctrict';
+
+		$(document).ready(function () { $('#ctrlzone').show(); });
+
+		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
+		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
+
+		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
+			$scope.conf = { low: 0, high: 700, isBusy: true };
+
+			$scope.profile = {
+				current: {},
+				posts: [],
+				posttype: 'likes',
+				dots: [],
+				dotconfig: { scale: 5, dist: 50, low: $scope.conf.low, high: 50 }
+			};
+
+			/* Загружает список постов по ID пользователя */
+			$scope.loadPosts = function () {
+				if (!_.isEmpty($scope.profile.current)) {
+					$scope.conf.isBusy = true;
+					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function (r) {
+						var d = _.filter(r, function (e) { if (!_.isEmpty(e)) return e; });
+						$scope.profile.posts = angular.copy(d);
+
+						$scope.showConfetti($scope.profile.posttype);
+						$scope.conf.isBusy = false;
+					});
+				}
+			};
+
+			/* Удаление постов */
+			$scope.clearPosts = function () { $scope.profile.posts = []; };
+
+			/* Удаление точек */
+			$scope.clearDots = function () { $scope.profile.dots = []; };
+
+			/* Возвращает количество постов по типу параметра */
+			$scope.countPost = function (_type) {
+				return _.filter($scope.profile.posts, function (e) { if (e.post_type == _type) return e; });
+			};
+
+			/* Строит шаблон конфети */
+			$scope.showConfetti = function (_type) {
+				$scope.profile.posttype = _type;
+				confetti.init($scope);
+			};
+
+			/* FRIENDS */
+			$scope.friends = [];
+			$scope.getFriends = function (id) {
+				if (!_.isEmpty(id)) {
+					$scope.conf.isBusy = true;
+					vkService.usersGet(id).then(function (u) {
+						$scope.profile.person = angular.copy(u[0]);
+
+						vkService.friendsGet(id, 'last_name').then(function (r) {
+							$scope.friends = angular.copy(r);
+							localforage.setItem('users', angular.copy(r));
+						}).then(function () { $scope.conf.isBusy = false; });
+					});
+				}
+			};
+
+			/* INIT */
+			$scope.getFriends(vk_id);
+		});
+	</script>
+}

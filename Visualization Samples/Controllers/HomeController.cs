@@ -33,14 +33,24 @@ namespace Visualization_Samples.Controllers
 			return View();
 		}
 
-		public ActionResult PersonTest()
+		public ActionResult VkPost()
 		{
 			if (!Request.QueryString["id"].IsEmpty())
 			{
 				ViewBag.ID = Request.QueryString["id"];
 			}
 
-			return View("PersonTest", "_SecondLayout");
+			return View("VkPost", "_SecondLayout");
+		}
+
+		public ActionResult VkProfile()
+		{
+			if (!Request.QueryString["id"].IsEmpty())
+			{
+				ViewBag.ID = Request.QueryString["id"];
+			}
+
+			return View("VkProfile", "_SecondLayout");
 		}
 	}
 }
