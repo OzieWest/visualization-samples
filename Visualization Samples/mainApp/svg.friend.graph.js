@@ -1,24 +1,33 @@
 ﻿var graph = {
-	w: function () { return $('div[svgfriend]').parent().width(); },
-	h: 500,
-	init: function (one, two, dist, raduis) {
+	w: function () {
+		return $('div[svgfriend]').parent().width(); },
+	h: 1500,
+	init: function (uid, data, dist, raduis) {
+
+		function isExist(uid) {
+			var r = _.filter(graph.nodes, function (n) {
+				if (n.uid == uid) return n;
+			});
+
+			if (r.length != 0) return true;
+			else return false;
+		}
+
 		var graph = { links: [], nodes: [], };
 
-		var target = { uid: one.id, name: 'target', group: 1 };
+		var target = { uid: uid, name: 'target', group: 1 };
 		graph.nodes.push(target);
-		_.each(one.f, function (e) {
-			graph.nodes.push({ uid: e.uid, name: e.last_name + ' ' + e.first_name, group: 2 });
-			graph.links.push({ source: target.uid, target: e.uid, value: 1 });
-		});
-		
-		var enemy = { uid: two.id, name: 'enemy', group: 3 };
-		var m = _.filter(graph.nodes, function (n) { if (n.uid == enemy.uid) return n; }).length;
-		if (m == 0) graph.nodes.push(enemy);
-		
-		_.each(two.f, function (e) {
-			var m = _.filter(graph.nodes, function (n) { if (n.uid == e.uid) return n; }).length;
-			if (m == 0) graph.nodes.push({ uid: e.uid, name: e.last_name + ' ' + e.first_name, group: 4 });
-			graph.links.push({ source: enemy.uid, target: e.uid, value: 1 });
+
+		var group = 1;
+		_.each(data, function (e) {
+			group++;
+			var p = { uid: e.uid, name: e.name, group: group };
+			if (!isExist(p.uid)) graph.nodes.push(p);
+			_.each(e.friends, function (f) {
+				var node = { uid: f.uid, name: f.last_name + ' ' + f.first_name, group: group };
+				if (!isExist(node.uid)) graph.nodes.push(node);
+				graph.links.push({ source: p.uid, target: node.uid, value: 1, group: group});
+			});
 		});
 
 		var color = d3.scale.category20();
@@ -32,6 +41,7 @@
 			.attr("width", this.w())
 			.attr("height", this.h);
 
+		localforage.setItem('graph', graph);
 		this.create(graph, color, force, svg, raduis);
 	},
 	create: function (graph, color, force, svg, raduis) {
@@ -56,28 +66,28 @@
 		var link = svg.selectAll(".link")
 			.data(bilinks)
 			.enter().append("path")
-			.attr("class", "link");
+			.attr("class", "link")
+			.style("stroke", function(d) { return color(d.group); });
 
 		var node = svg.selectAll(".node")
 			.data(graph.nodes)
 			.enter().append("circle")
 			.attr("class", "node")
 			.attr("r", raduis)
-			.style("fill", function (d) { return color(d.group); })
-			.call(force.drag);
+			.style("fill", function(d) { return color(d.group); });
 
-		node.append("title")
-			.text(function (d) { return d.name; });
+		node.append("title").text(function (d) { return d.name; });
 
 		force.on("tick", function () {
+			node.attr("transform", function (d) {
+				return "translate(" + d.x + "," + d.y + ")";
+			});
+			
 			link.attr("d", function (d) {
 				return "M" + d[0].x + "," + d[0].y
 					+ "S" + d[1].x + "," + d[1].y
 					+ " " + d[2].x + "," + d[2].y;
-			});
-			node.attr("transform", function (d) {
-				return "translate(" + d.x + "," + d.y + ")";
-			});
+			});;
 		});
 	}
 };

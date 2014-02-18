@@ -45,8 +45,7 @@
 		}
 
 		.link {
-			fill: none;
-			stroke: #bbb;
+			
 		}
 	</style>
 }
@@ -62,7 +61,9 @@
 
 	<tabset>
 		<tab heading="User">
-			<input type="text" ng-model="profile.target.id" /> <button class="btn btn-info" ng-click="testGraph()">Test info</button>
+			<progressbar class="progress-striped active" value="bigdata.length" type="info">{{ bigdata.length }}</progressbar>
+			<button class="btn btn-info" ng-click="testGraph()">Load Info</button>
+			<button class="btn btn-info" ng-click="createGraph()">Create graph</button>
 			<div svgfriend></div>
 			<div class="row">
 				<div class="col-sm-6">
@@ -197,16 +198,15 @@
 	<script type="text/javascript">
 		'use sctrict';
 
-		$(document).ready(function () { $('#ctrlzone').show(); });
-
-		var bigdata = [];
+		$(document).ready(function() { $('#ctrlzone').show(); });
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
-		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
+		mainModule.controller('treeController', function($scope, $timeout, vkService, show, vk_id) {
 			$scope.conf = { low: 0, high: 700, isBusy: true };
-
+			$scope.bigdata = [];
+			
 			$scope.profile = {
 				person: {},
 				target: { id: 0 },
@@ -267,22 +267,55 @@
 
 			/* INIT */
 			$scope.getFriends(vk_id);
-			var time = 1000;
 
-			$scope.testGraph = function () {
-				var idList = _.map($scope.friends, function (r) { return r.uid; });
-				_.each(idList, function (id) {
-					time += 3000;
-					$timeout(function () {
-						vkService.friendsGet(id, '').then(function (r) {
-							bigdata.push(r);
-							localforage.setItem(id, r, function () { console.count('user'); });
+			var callTimer = 0;
+			$scope.testGraph = function() {
+				var friends = _.map($scope.friends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
+				_.each(friends, function (f) {
+					callTimer += 1000;
+					$timeout(function() {
+						vkService.friendsGet(f.uid, 'last_name').then(function (r) {
+							if (typeof r != 'undefined' && r.length != 0) {
+								$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
+								localforage.setItem(f.uid, r, function () { console.count('user'); });
+							}
 						});
-					}, time);
+					}, callTimer);
 				});
 			};
+
+			$scope.createGraph = function () {
+				var data = $scope.bigdata;
+				var idArray = [];
+				var ownerId = vk_id;
+				var counter = 0;
+				for (var i = 0; i < data.length; i++) {
+					for (var j = counter; j < data.length; j++) {
+						if (i !== j) {
+							var current = _.compact(_.map(data[i].friends, function (f) {
+								if (f.uid !== ownerId) return f.uid;
+							}));
+							var next = _.compact(_.map(data[j].friends, function (f) {
+								if (f.uid !== ownerId) return f.uid;
+							}));
+							var d = _.filter(_.intersection(current, next), function(r) {
+								 if (r.uid !== ownerId) return r;
+							});
+
+							if (typeof d != 'undefined' && d.length != 0) {
+								_.each(d, function (e) { idArray.push(e); });
+							}
+						}
+					}
+					counter++;
+				}
+				idArray = _.uniq(idArray);
+				_.each(data, function (e) {
+					e.friends = _.compact(_.map(e.friends, function (f) { if (_.contains(idArray, f.uid)) return f; }));
+				});
+
+				graph.init(vk_id, data, 20, 4);
+			};
 		});
-	//1563369
-		//var mainMass = _.compact(_.map(bigtable, function(e) { if(typeof e.friends != 'undefined') { return {uid: e.uid, f: _.map(e.friends, function(f) { return f.uid; })}; } }));
 	</script>
 }

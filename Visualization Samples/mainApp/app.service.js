@@ -46,36 +46,6 @@ mainService.factory('vkService', function ($http, $q) {
 				deferred.reject();
 			});
 			return deferred.promise;
-		},
-		friendAllGet: function () {
-			var test = {
-				a: {},
-				b: {}
-			};
-			
-			//var a = ;
-			//var a = getFriendCallback('1563369');
-
-			setTimeout(getFriendCallback('169483251', test.a), 1000);
-			setTimeout(getFriendCallback('1563369', test.a), 2000);
-
-			return test;
-		},
+		}
 	};
 });
-
-
-function getFriendCallback($q, $http, id, prom) {
-	var deferred = $q.defer();
-	var path = ROOT('friends.get') + '&user_id=' + id;
-	var p = $http.jsonp(path + '&callback=JSON_CALLBACK');
-	p.success(function(data) {
-		console.info('friendsGet', id, 'return', data.response);
-		deferred.resolve(data.response);
-	});
-	p.error(function(err) {
-		console.error('friendsGet error', err);
-		deferred.reject();
-	});
-	prom = deferred.promise;
-}
