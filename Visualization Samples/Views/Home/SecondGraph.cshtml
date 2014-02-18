@@ -25,9 +25,9 @@
 @section scripts
 {
 	<script type="text/javascript">
-		app.value('ddd', d3);
+		mainModule.value('ddd', d3);
 
-		app.controller('ctrl', function($scope, ddd) {
+		mainModule.controller('ctrl', function ($scope, ddd) {
 
 			$scope.message = {
 				source: 'JavaScript, and JavaScript development has come a long way since the early days. Time and circumstance have been kind to the platform, and recent changes, specifically the addition of such modern frameworks as Knockout, Backbone, and AngularJS have really raised the bar, ushering in an era of maturity and sophistication that we’ve simply never seen before now.',

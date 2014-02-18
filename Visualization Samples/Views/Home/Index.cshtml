@@ -24,9 +24,9 @@
 @section scripts
 {
 	<script type="text/javascript">
-		app.value('dead', d3);
+		mainModule.value('dead', d3);
 
-		app.controller('treeController', function ($scope, show, dead) {
+		mainModule.controller('treeController', function ($scope, show, dead) {
 			$scope.message = {
 				source: 'Data Driven Documents is a JavaScript library for manipulating documents based on data',
 				words: [],
