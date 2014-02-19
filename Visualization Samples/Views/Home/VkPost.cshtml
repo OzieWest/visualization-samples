@@ -55,103 +55,108 @@
 }
 
 <div id="ctrlzone" ng-controller="treeController" style="display: none;">
+	
+	<div class="text-danger" style="font-size: 16px;" ng-if="vkid.length == 0">
+		?id=your_id
+	</div>
 
-	<progressbar ng-show="conf.isBusy" class="progress-striped active" value="100" type="info">loading...</progressbar>
+	<div ng-if="vkid.length != 0">
+		<progressbar ng-show="conf.isBusy" class="progress-striped active" value="100" type="info">loading...</progressbar>
 
-	<div class="row">
-		<div class="col-sm-3">
-			<div style="margin-bottom: 10px;">
-				<select ng-disabled="profile.posts.length != 0" ng-model="profile.current" ng-options="f.last_name + ' ' + f.first_name for f in friends | orderBy:['last_name']" style="margin-bottom: 5px;"></select>
-				<a ng-show="profile.posts.length == 0" class="btn btn-info btn-block" ng-click="loadPosts()">
-					<i class="fa fa-cloud-download"></i>Load posts
-				</a>
-				<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
-					<i class="glyphicon glyphicon-remove-circle"></i>Clear data
-				</a>
-				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">
-					<i class="fa fa-thumbs-up"></i>by Likes
-				</a>
-				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">
-					<i class="eicon eicon-comment"></i>by Comments
-				</a>
-				<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">
-					<i class="fa fa-retweet"></i>by Reposts
-				</a>
+		<div class="row">
+			<div class="col-sm-3">
+				<div style="margin-bottom: 10px;">
+					<select ng-disabled="profile.posts.length != 0" ng-model="profile.current" ng-options="f.last_name + ' ' + f.first_name for f in friends | orderBy:['last_name']" style="margin-bottom: 5px;"></select>
+					<a ng-show="profile.posts.length == 0" class="btn btn-info btn-block" ng-click="loadPosts()">
+						<i class="fa fa-cloud-download"></i>Load posts
+					</a>
+					<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
+						<i class="glyphicon glyphicon-remove-circle"></i>Clear data
+					</a>
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">
+						<i class="fa fa-thumbs-up"></i>by Likes
+					</a>
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">
+						<i class="eicon eicon-comment"></i>by Comments
+					</a>
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">
+						<i class="fa fa-retweet"></i>by Reposts
+					</a>
+				</div>
 			</div>
-		</div>
-		<div class="col-sm-9">
-			<ol class="breadcrumb" ng-hide="profile.posts.length == 0">
-				<li class="active">sorting by {{ profile.posttype }}</li>
-				<li>original: {{ countPost('post').length }}</li>
-				<li>reposts: {{ countPost('copy').length }}</li>
-			</ol>
+			<div class="col-sm-9">
+				<ol class="breadcrumb" ng-hide="profile.posts.length == 0">
+					<li class="active">sorting by {{ profile.posttype }}</li>
+					<li>original: {{ countPost('post').length }}</li>
+					<li>reposts: {{ countPost('copy').length }}</li>
+				</ol>
 
-			<div class="row">
-				<div class="col-sm-6">
-					<h4>Dot scale:</h4>
-					<div class="row" style="margin-bottom: 10px;">
-						<div class="col-sm-3">
-							<input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" />
+				<div class="row">
+					<div class="col-sm-6">
+						<h4>Dot scale:</h4>
+						<div class="row" style="margin-bottom: 10px;">
+							<div class="col-sm-3">
+								<input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" />
+							</div>
+							<div class="col-sm-9">
+								<div range-slider min="0" max="50" model-max="profile.dotconfig.scale" pin-handle="min"></div>
+							</div>
 						</div>
-						<div class="col-sm-9">
-							<div range-slider min="0" max="50" model-max="profile.dotconfig.scale" pin-handle="min"></div>
+					</div>
+					<div class="col-sm-6">
+						<h4>Dot distance:</h4>
+						<div class="row" style="margin-bottom: 10px;">
+							<div class="col-sm-3">
+								<input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" />
+							</div>
+							<div class="col-sm-9">
+								<div range-slider min="20" max="400" model-max="profile.dotconfig.dist" pin-handle="min" step="50"></div>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="col-sm-6">
-					<h4>Dot distance:</h4>
-					<div class="row" style="margin-bottom: 10px;">
-						<div class="col-sm-3">
-							<input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" />
-						</div>
-						<div class="col-sm-9">
-							<div range-slider min="20" max="400" model-max="profile.dotconfig.dist" pin-handle="min" step="50"></div>
-						</div>
-					</div>
-				</div>
-			</div>
 
-			<div class="row" style="margin-bottom: 10px;">
-				<div class="col-sm-12">
-					<h4>Dot min-max:</h4>
-					<div class="row" style="margin-bottom: 10px;">
-						<div class="col-sm-3">
-							<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
-							<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
-						</div>
-						<div class="col-sm-9">
-							<div range-slider
-								min="conf.low"
-								max="conf.high"
-								model-min="profile.dotconfig.low"
-								model-max="profile.dotconfig.high"
-								step="5">
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-sm-12">
+						<h4>Dot min-max:</h4>
+						<div class="row" style="margin-bottom: 10px;">
+							<div class="col-sm-3">
+								<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
+								<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
+							</div>
+							<div class="col-sm-9">
+								<div range-slider
+								     min="conf.low"
+								     max="conf.high"
+								     model-min="profile.dotconfig.low"
+								     model-max="profile.dotconfig.high"
+								     step="5">
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+		<div svgposts></div>
+
+		<table style="margin-top: 10px;" class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
+			<tr>
+				<td class="col_1">post id</td>
+				<td class="col_2">val</td>
+				<td class="col_3">type</td>
+				<td class="col_4">
+					<a ng-click="clearDots()" class="btn btn-inverse btn-block">Clear dots</a>
+				</td>
+			</tr>
+			<tr ng-repeat="d in profile.dots track by $index">
+				<td class="col_1">{{ d.postid }}</td>
+				<td class="col_2">{{ d.val }}</td>
+				<td class="col_3">{{ d.type }}</td>
+				<td class="col_4">{{ d.url }}</td>
+			</tr>
+		</table>
 	</div>
-	<div svgposts></div>
-
-	<table style="margin-top: 10px;" class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
-		<tr>
-			<td class="col_1">post id</td>
-			<td class="col_2">val</td>
-			<td class="col_3">type</td>
-			<td class="col_4">
-				<a ng-click="clearDots()" class="btn btn-inverse btn-block">Clear dots</a>
-			</td>
-		</tr>
-		<tr ng-repeat="d in profile.dots track by $index">
-			<td class="col_1">{{ d.postid }}</td>
-			<td class="col_2">{{ d.val }}</td>
-			<td class="col_3">{{ d.type }}</td>
-			<td class="col_4">{{ d.url }}</td>
-		</tr>
-	</table>
-
 </div>
 
 @section scripts
@@ -168,7 +173,7 @@
 
 		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
 			$scope.conf = { low: 0, high: 700, isBusy: true };
-
+			$scope.vkid = vk_id;
 			$scope.profile = {
 				current: {},
 				posts: [],
@@ -218,6 +223,11 @@
 
 						vkService.friendsGet(id, 'last_name').then(function (r) {
 							$scope.friends = angular.copy(r);
+							$scope.profile.person.online = 0;
+							$scope.profile.person.user_id = $scope.profile.person.uid;
+							
+							$scope.friends.push($scope.profile.person);
+
 							localforage.setItem('users', angular.copy(r));
 						}).then(function () { $scope.conf.isBusy = false; });
 					});

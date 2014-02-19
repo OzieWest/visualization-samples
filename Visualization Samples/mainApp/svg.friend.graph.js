@@ -89,9 +89,12 @@
 		var node = svg.selectAll(".node")
 			.data(graph.nodes)
 			.enter().append("circle")
-			.attr("class", "node")
 			.attr("r", raduis)
+			.attr("class", "node")
+			.attr("stroke", "#fff")
 			.style("fill", function (d) { return color(d.group); })
+			.on("mouseover", mouseover)
+			.on("mouseout", mouseout)
 			.call(force.drag);
 
 		node.append("title").text(function (d) { return d.name; });
@@ -107,6 +110,14 @@
 					+ " " + d[2].x + "," + d[2].y;
 			});;
 		});
+		
+		function mouseover() {
+			d3.select(this).attr("stroke", "black");
+		}
+
+		function mouseout() {
+			d3.select(this).attr("stroke", "#fff");
+		}
 	}
 };
 

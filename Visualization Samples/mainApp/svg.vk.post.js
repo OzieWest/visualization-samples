@@ -24,7 +24,7 @@ var confetti = {
 			var dist = parseInt(_scope.profile.dotconfig.dist);
 
 			var w = $('div[svgposts]').parent().width(),
-				h = 500,
+				h = 600,
 				nodes = [];
 
 			var svg = d3.select('div[svgposts]').append("svg")
