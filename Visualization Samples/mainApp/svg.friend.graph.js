@@ -4,9 +4,18 @@
 	h: 1500,
 	init: function (uid, data, dist, raduis) {
 
-		function isExist(uid) {
+		function isNodeExist(uid) {
 			var r = _.filter(graph.nodes, function (n) {
 				if (n.uid == uid) return n;
+			});
+
+			if (r.length != 0) return true;
+			else return false;
+		}
+		
+		function isLinkExist(link) {
+			var r = _.filter(graph.links, function (l) {
+				if (l.source == link.source && l.target == link.target) return l;
 			});
 
 			if (r.length != 0) return true;
@@ -20,14 +29,19 @@
 
 		var group = 1;
 		_.each(data, function (e) {
-			group++;
-			var p = { uid: e.uid, name: e.name, group: group };
-			if (!isExist(p.uid)) graph.nodes.push(p);
-			_.each(e.friends, function (f) {
-				var node = { uid: f.uid, name: f.last_name + ' ' + f.first_name, group: group };
-				if (!isExist(node.uid)) graph.nodes.push(node);
-				graph.links.push({ source: p.uid, target: node.uid, value: 1, group: group});
-			});
+			if (e.friends.length != 0) {
+				group++;
+				var p = { uid: e.uid, name: e.name, group: group };
+				if (!isNodeExist(p.uid)) graph.nodes.push(p);
+			
+				_.each(e.friends, function (f) {
+					var node = { uid: f.uid, name: f.last_name + ' ' + f.first_name, group: group };
+					if (!isNodeExist(node.uid)) graph.nodes.push(node);
+
+					var link = { source: p.uid, target: node.uid, value: 1 };
+					if (!isLinkExist(link)) graph.links.push(link);
+				});
+			}
 		});
 
 		var color = d3.scale.category20();
@@ -37,7 +51,10 @@
 			.linkStrength(5)
 			.size([this.w(), this.h]);
 
-		var svg = d3.select('div[svgfriend]').append("svg")
+		d3.select('svg').remove();// удаляем граф если он уже есть
+		
+		var svg = d3.select('div[svgfriend]')
+			.append("svg")
 			.attr("width", this.w())
 			.attr("height", this.h);
 
@@ -63,18 +80,19 @@
 			.links(links)
 			.start();
 
-		var link = svg.selectAll(".link")
+		var link = svg.selectAll(".mylink")
 			.data(bilinks)
 			.enter().append("path")
-			.attr("class", "link")
-			.style("stroke", function(d) { return color(d.group); });
+			.attr("class", "mylink")
+			.style("stroke", "#E9EDF1");
 
 		var node = svg.selectAll(".node")
 			.data(graph.nodes)
 			.enter().append("circle")
 			.attr("class", "node")
 			.attr("r", raduis)
-			.style("fill", function(d) { return color(d.group); });
+			.style("fill", function (d) { return color(d.group); })
+			.call(force.drag);
 
 		node.append("title").text(function (d) { return d.name; });
 

@@ -44,7 +44,9 @@
 			stroke-width: 1.5px;
 		}
 
-		.link {
+		.mylink {
+			stroke-width: 1px;
+			fill: none;
 		}
 	</style>
 }
@@ -55,11 +57,54 @@
 }
 
 <div id="ctrlzone" ng-controller="treeController" style="display: none;">
+	
+	<div ng-if="vkid.length == 0" style="font-size: 16px;">
+		{{ vkid }} ?id=your_id
+	</div>
 
-	<progressbar class="progress-striped active" value="bigdata.length" type="info">{{ bigdata.length }}</progressbar>
-	<button class="btn btn-info" ng-click="testGraph()">Load Info</button>
-	<button class="btn btn-info" ng-click="createGraph()">Create graph</button>
-	<div svgfriend></div>
+	<div ng-if="vkid.length != 0">
+		<progressbar ng-show="lock && calcWith() != 100" class="progress-striped active" value="calcWith()" type="info">loading...</progressbar>
+		<button ng-hide="lock" class="btn btn-info" ng-click="loadData()">Load Info</button>
+		<button ng-hide="calcWith() != 100" class="btn btn-info" ng-click="createGraph()">Create graph</button>
+
+		<div ng-show="calcWith() == 100" class="row">
+			<div class="col-sm-4">
+				<h4>Ignore border:</h4>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-sm-3">
+						<input type="text" ng-model="config.ignore" style="width: 80px;" />
+					</div>
+					<div class="col-sm-9">
+						<div range-slider min="0" max="1500" model-max="config.ignore" pin-handle="min"></div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<h4>Dot distance:</h4>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-sm-3">
+						<input type="text" ng-model="config.dist" style="width: 80px;" />
+					</div>
+					<div class="col-sm-9">
+						<div range-slider min="10" max="50" model-max="config.dist" pin-handle="min" step="10"></div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<h4>Dot radius:</h4>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-sm-3">
+						<input type="text" ng-model="config.rad" style="width: 80px;" />
+					</div>
+					<div class="col-sm-9">
+						<div range-slider min="1" max="15" model-max="config.rad" pin-handle="min" step="1"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div style="margin-top: 20px;" svgfriend></div>
+	</div>
 </div>
 
 @section scripts
@@ -74,55 +119,108 @@
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
 		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
+			var myfriends = [];
+			var callTimer = 0;
+
+			$scope.vkid = vk_id;
+
 			$scope.bigdata = [];
+			$scope.load = 0;
+			$scope.lock = false;
+			$scope.config = {
+				ignore: 150,
+				dist: 30,
+				rad: 5,
+			};
 
 			/* Загружает список постов по ID пользователя */
 			/* FRIENDS */
-			$scope.friends = [];
 			$scope.getFriends = function (id) {
 				if (!_.isEmpty(id)) {
 					vkService.friendsGet(id, 'last_name').then(function (r) {
-						$scope.friends = angular.copy(r);
+						myfriends = angular.copy(r);
 						localforage.setItem('users', angular.copy(r));
 					});
 				}
 			};
 
-			/* INIT */
-			$scope.getFriends(vk_id);
+			$scope.calcWith = function () {
+				return $scope.load / myfriends.length * 100;
+			};
 
-			var callTimer = 0;
-			$scope.testGraph = function () {
-				var friends = _.map($scope.friends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
-				_.each(friends, function (f) {
-					callTimer += 1000;
-					$timeout(function () {
-						vkService.friendsGet(f.uid, 'last_name').then(function (r) {
-							if (typeof r != 'undefined' && r.length != 0) {
-								$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
-								localforage.setItem(f.uid, r, function () { console.count('user'); });
-							}
-						});
-					}, callTimer);
-				});
+			$scope.loadData = function () {
+				if (!$scope.lock) {
+					var friends = _.map(myfriends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
+					_.each(friends, function (f) {
+						callTimer += 1000;
+						$timeout(function () {
+							vkService.friendsGet(f.uid, 'last_name').then(function (r) {
+								$scope.load++;
+								if (typeof r != 'undefined' && r.length != 0) {
+									$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
+									console.log(f.name, r.length);
+								}
+							});
+						}, callTimer);
+					});
+				}
+				$scope.lock = true;
 			};
 
 			$scope.createGraph = function () {
-				var data = $scope.bigdata;
+				var data = angular.copy($scope.bigdata);
+				localforage.setItem('data', data);
+
+				// Проверяем границу дозволенности по количеству френдов
+				if ($scope.config.ignore != 0) {
+					_.each(data, function (d) {
+						if (d.friends.length > $scope.config.ignore) {
+							d.friends = [];
+						}
+					});
+				}
+				// Получаем список ID которые всречаются более одного раза, 
+				// на основе него выираем нужных нам людей
+				var idArray = getListIntersection(data, vk_id);
+				_.each(data, function (e) {
+					e.friends = _.compact(_.map(e.friends, function (f) {
+						if (_.contains(idArray, f.uid))
+							return f;
+					}));
+				});
+
+				// Создаем граф
+				graph.init(vk_id, data, $scope.config.dist, $scope.config.rad);
+			};
+
+			$scope.createTable = function () {
+				var idArray = getListIntersection($scope.bigdata, vk_id);
+				_.each(idArray, function (e) {
+
+				});
+
+				graph.init(vk_id, data, config.dist, 4);
+			};
+
+			/* Возвращает список друзей которые пересекаются */
+
+			function getListIntersection(data, ownerId) {
 				var idArray = [];
-				var ownerId = vk_id;
 				var counter = 0;
 				for (var i = 0; i < data.length; i++) {
 					for (var j = counter; j < data.length; j++) {
 						if (i !== j) {
 							var current = _.compact(_.map(data[i].friends, function (f) {
-								if (f.uid !== ownerId) return f.uid;
+								if (f.uid !== ownerId)
+									return f.uid;
 							}));
 							var next = _.compact(_.map(data[j].friends, function (f) {
-								if (f.uid !== ownerId) return f.uid;
+								if (f.uid !== ownerId)
+									return f.uid;
 							}));
 							var d = _.filter(_.intersection(current, next), function (r) {
-								if (r.uid !== ownerId) return r;
+								if (r.uid !== ownerId)
+									return r;
 							});
 
 							if (typeof d != 'undefined' && d.length != 0) {
@@ -132,13 +230,11 @@
 					}
 					counter++;
 				}
-				idArray = _.uniq(idArray);
-				_.each(data, function (e) {
-					e.friends = _.compact(_.map(e.friends, function (f) { if (_.contains(idArray, f.uid)) return f; }));
-				});
+				return _.uniq(idArray);
+			}
 
-				graph.init(vk_id, data, 20, 4);
-			};
+			/* INIT */
+			$scope.getFriends(vk_id);
 		});
 	</script>
 }
