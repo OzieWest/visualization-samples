@@ -9,3 +9,5 @@
 #### Пересечение профилей друзей
 
 ![Bilby Stampede](screenshots/svg.vk.friends.jpg)
+
+#### test info
