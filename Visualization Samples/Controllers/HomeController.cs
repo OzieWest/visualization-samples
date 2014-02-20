@@ -18,39 +18,9 @@ namespace Visualization_Samples.Controllers
 			return View();
 		}
 
-		public ActionResult SecondGraph()
+		public ActionResult LetterGraph()
 		{
 			return View();
-		}
-
-		public ActionResult Hexagon()
-		{
-			return View();
-		}
-
-		public ActionResult Сonfetti()
-		{
-			return View();
-		}
-
-		public ActionResult VkPost()
-		{
-			if (!Request.QueryString["id"].IsEmpty())
-			{
-				ViewBag.ID = Request.QueryString["id"];
-			}
-
-			return View("VkPost", "_SecondLayout");
-		}
-
-		public ActionResult VkProfile()
-		{
-			if (!Request.QueryString["id"].IsEmpty())
-			{
-				ViewBag.ID = Request.QueryString["id"];
-			}
-
-			return View("VkProfile", "_SecondLayout");
 		}
 	}
 }

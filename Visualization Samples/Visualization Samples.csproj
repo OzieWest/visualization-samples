@@ -192,9 +192,8 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\DataController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\TestController.cs" />
+    <Compile Include="Controllers\VkController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -205,9 +204,9 @@
   <ItemGroup>
     <Content Include="Content\angular.rangeSlider.css" />
     <Content Include="mainApp\app.service.js" />
-    <Content Include="mainApp\svg.friend.graph.js" />
+    <Content Include="mainApp\svg.vk.friends.js" />
     <Content Include="Scripts\angular.rangeSlider.js" />
-    <Content Include="mainApp\svg.vk.post.js" />
+    <Content Include="mainApp\svg.vk.posts.js" />
     <Content Include="Content\application.min.css" />
     <Content Include="Content\bgnoise_lg_dark.png" />
     <Content Include="Content\fontello\css\fontello.css" />
@@ -346,13 +345,10 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="Views\Home\Sigma.cshtml" />
-    <Content Include="Views\Home\SecondGraph.cshtml" />
-    <Content Include="Views\Home\Hexagon.cshtml" />
-    <Content Include="Views\Home\Сonfetti.cshtml" />
-    <Content Include="Views\Home\VkPost.cshtml" />
     <Content Include="Views\Shared\_SecondLayout.cshtml" />
-    <Content Include="Views\Home\VkProfile.cshtml" />
+    <Content Include="Views\Vk\Posts.cshtml" />
+    <Content Include="Views\Home\LetterGraph.cshtml" />
+    <Content Include="Views\Vk\Profile.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

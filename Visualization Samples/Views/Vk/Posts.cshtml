@@ -90,52 +90,24 @@
 					<li>original: {{ countPost('post').length }}</li>
 					<li>reposts: {{ countPost('copy').length }}</li>
 				</ol>
-
-				<div class="row">
-					<div class="col-sm-6">
-						<h4>Dot scale:</h4>
-						<div class="row" style="margin-bottom: 10px;">
-							<div class="col-sm-3">
-								<input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" />
-							</div>
-							<div class="col-sm-9">
-								<div range-slider min="0" max="50" model-max="profile.dotconfig.scale" pin-handle="min"></div>
-							</div>
-						</div>
-					</div>
-					<div class="col-sm-6">
-						<h4>Dot distance:</h4>
-						<div class="row" style="margin-bottom: 10px;">
-							<div class="col-sm-3">
-								<input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" />
-							</div>
-							<div class="col-sm-9">
-								<div range-slider min="20" max="400" model-max="profile.dotconfig.dist" pin-handle="min" step="50"></div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="row" style="margin-bottom: 10px;">
-					<div class="col-sm-12">
-						<h4>Dot min-max:</h4>
-						<div class="row" style="margin-bottom: 10px;">
-							<div class="col-sm-3">
-								<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
-								<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
-							</div>
-							<div class="col-sm-9">
-								<div range-slider
-								     min="conf.low"
-								     max="conf.high"
-								     model-min="profile.dotconfig.low"
-								     model-max="profile.dotconfig.high"
-								     step="5">
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+				
+				<table class="table table-bordered table-striped">
+					<tr>
+						<td>Dot scale</td>
+						<td><input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" /></td>
+					</tr>
+					<tr>
+						<td>Dot distance</td>
+						<td><input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" /></td>
+					</tr>
+					<tr>
+						<td>Dot min-max</td>
+						<td>
+							<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
+						<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
+						</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 		<div svgposts></div>
@@ -161,7 +133,7 @@
 
 @section scripts
 {
-	<script src="~/mainApp/svg.vk.post.js"></script>
+	<script src="~/mainApp/svg.vk.posts.js"></script>
 
 	<script type="text/javascript">
 		'use sctrict';

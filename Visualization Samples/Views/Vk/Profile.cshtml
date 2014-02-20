@@ -57,7 +57,7 @@
 
 <div id="ctrlzone" ng-controller="treeController" style="display: none;">
 	
-	<div ng-if="vkid.length == 0" style="font-size: 16px;">
+	<div class="text-danger" ng-if="vkid.length == 0" style="font-size: 16px;">
 		{{ vkid }} ?id=your_id
 	</div>
 
@@ -108,7 +108,7 @@
 
 @section scripts
 {
-	<script src="~/mainApp/svg.friend.graph.js"></script>
+	<script src="~/mainApp/svg.vk.friends.js"></script>
 	<script type="text/javascript">
 		'use sctrict';
 
