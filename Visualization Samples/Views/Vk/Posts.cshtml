@@ -43,14 +43,12 @@
 			stroke: #fff;
 			stroke-width: 1.5px;
 		}
-
-		.link {
-		}
 	</style>
+	<link href="~/Content/rickshaw.min.css" rel="stylesheet" />
 }
 
 <div id="ctrlzone" ng-controller="treeController" style="display: none;">
-	
+
 	<div class="text-danger" style="font-size: 16px;" ng-if="vkid.length == 0">
 		?id=your_id
 	</div>
@@ -68,15 +66,20 @@
 					<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
 						<i class="glyphicon glyphicon-remove-circle"></i>Clear data
 					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('likes')">
-						<i class="fa fa-thumbs-up"></i>by Likes
+
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="allInOneGraph()">
+						<i class="fa fa-retweet"></i>All in One
 					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('comments')">
-						<i class="eicon eicon-comment"></i>by Comments
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('likes')">
+						<i class="fa fa-thumbs-up"></i>only Likes
 					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="showConfetti('reposts')">
-						<i class="fa fa-retweet"></i>by Reposts
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('comments')">
+						<i class="eicon-comment"></i>only Comments
 					</a>
+					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('reposts')">
+						<i class="fa fa-retweet"></i>only Reposts
+					</a>
+					<select ng-show="profile.posts.length != 0" ng-options="renderer for renderer in graph.renderers" ng-model="graph.renderer"></select>
 				</div>
 			</div>
 			<div class="col-sm-9">
@@ -85,27 +88,18 @@
 					<li>original: {{ countPost('post').length }}</li>
 					<li>reposts: {{ countPost('copy').length }}</li>
 				</ol>
-				
-				<table class="table table-bordered table-striped">
-					<tr>
-						<td>Dot scale</td>
-						<td><input type="text" ng-model="profile.dotconfig.scale" style="width: 80px;" /></td>
-					</tr>
-					<tr>
-						<td>Dot distance</td>
-						<td><input type="text" ng-model="profile.dotconfig.dist" style="width: 80px;" /></td>
-					</tr>
-					<tr>
-						<td>Dot min-max</td>
-						<td>
-							<input type="text" ng-model="profile.dotconfig.low" style="width: 80px;" />
-						<input type="text" ng-model="profile.dotconfig.high" style="width: 80px;" />
-						</td>
-					</tr>
-				</table>
 			</div>
 		</div>
-		<div svgposts></div>
+		
+		<div ng-show="profile.posts.length != 0">
+			<my-chart
+				data="graph.data"
+				color="graph.color"
+				renderer="graph.renderer"
+				w="graph.w()"
+				h="graph.h()">
+			</my-chart>
+		</div>
 
 		<table style="margin-top: 10px;" class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
 			<tr>
@@ -129,16 +123,17 @@
 @section scripts
 {
 	<script src="~/jsApp/svg.vk.posts.js"></script>
+	<script src="~/Scripts/rickshaw.min.js"></script>
 
 	<script type="text/javascript">
 		'use sctrict';
 
-		$(document).ready(function () { $('#ctrlzone').show(); });
+		$(document).ready(function() { $('#ctrlzone').show(); });
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
-		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
+		mainModule.controller('treeController', function($scope, $timeout, vkService, show, vk_id) {
 			$scope.conf = { low: 0, high: 700, isBusy: true };
 			$scope.vkid = vk_id;
 			$scope.profile = {
@@ -150,59 +145,113 @@
 			};
 
 			/* Загружает список постов по ID пользователя */
-			$scope.loadPosts = function () {
+			$scope.loadPosts = function() {
 				if (!_.isEmpty($scope.profile.current)) {
 					$scope.conf.isBusy = true;
-					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function (r) {
-						var d = _.filter(r, function (e) { if (!_.isEmpty(e)) return e; });
+					vkService.wallGet($scope.profile.current.user_id, 0, 100, 1, 1).then(function(r) {
+						var d = _.filter(r, function(e) { if (!_.isEmpty(e)) return e; });
 						$scope.profile.posts = angular.copy(d);
 
-						$scope.showConfetti($scope.profile.posttype);
+						$scope.allInOneGraph();
 						$scope.conf.isBusy = false;
 					});
 				}
 			};
 
 			/* Удаление постов */
-			$scope.clearPosts = function () { $scope.profile.posts = []; };
+			$scope.clearPosts = function() { $scope.profile.posts = []; };
 
 			/* Удаление точек */
-			$scope.clearDots = function () { $scope.profile.dots = []; };
+			$scope.clearDots = function() { $scope.profile.dots = []; };
 
 			/* Возвращает количество постов по типу параметра */
-			$scope.countPost = function (_type) {
-				return _.filter($scope.profile.posts, function (e) { if (e.post_type == _type) return e; });
+			$scope.countPost = function(_type) {
+				return _.filter($scope.profile.posts, function(e) { if (e.post_type == _type) return e; });
 			};
 
 			/* Строит шаблон конфети */
-			$scope.showConfetti = function (_type) {
+			$scope.showConfetti = function(_type) {
 				$scope.profile.posttype = _type;
 				confetti.init($scope);
 			};
 
 			/* FRIENDS */
 			$scope.friends = [];
-			$scope.getFriends = function (id) {
+			$scope.getFriends = function(id) {
 				if (!_.isEmpty(id)) {
 					$scope.conf.isBusy = true;
-					vkService.usersGet(id).then(function (u) {
+					vkService.usersGet(id).then(function(u) {
 						$scope.profile.person = angular.copy(u[0]);
 
-						vkService.friendsGet(id, 'last_name').then(function (r) {
+						vkService.friendsGet(id, 'last_name').then(function(r) {
 							$scope.friends = angular.copy(r);
 							$scope.profile.person.online = 0;
 							$scope.profile.person.user_id = $scope.profile.person.uid;
-							
+
 							$scope.friends.push($scope.profile.person);
 
 							localforage.setItem('users', angular.copy(r));
-						}).then(function () { $scope.conf.isBusy = false; });
+						}).then(function() { $scope.conf.isBusy = false; });
 					});
 				}
 			};
 
 			/* INIT */
 			$scope.getFriends(vk_id);
+
+			$scope.graph = {
+				renderers: ['line', 'bar', 'scatterplot', 'area'],
+				renderer: 'bar',
+				color: '#4ab0ce',
+				data: [{ data: [{ x: 0, y: 0 }], color: 'blue' }],
+				w: function() {
+					return $('#ctrlzone').parent().width();
+				},
+				h: function() { return 500; }
+			};
+
+			$scope.createGraph = function(prop) {
+				$scope.graph.data = [];
+
+				$scope.graph.data.push({
+					color: "#6EA6DA",
+					data: getPosts(prop),
+					name: prop
+				});
+			};
+
+			function getPosts(type) {
+				return _.compact(_.map($scope.profile.posts, function (e, i) {
+					return {
+						x: i,
+						y: e[type].count,
+						name: e.text,
+						ptype: e.post_type
+					};
+				}));
+			}
+			
+			$scope.allInOneGraph = function () {
+				$scope.graph.data = [];
+				
+				$scope.graph.data.push({
+					color: "orange",
+					data: getPosts('likes'),
+					name: 'likes'
+				});
+				
+				$scope.graph.data.push({
+					color: "#4ab0ce",
+					data: getPosts('comments'),
+					name: 'comments'
+				});
+				
+				$scope.graph.data.push({
+					color: "#91DF97",
+					data: getPosts('reposts'),
+					name: 'reposts'
+				});
+			};
 		});
 	</script>
 }

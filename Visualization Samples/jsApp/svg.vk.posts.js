@@ -1,7 +1,7 @@
 ﻿'use sctrict';
 
 var confetti = {
-	init: function (_scope) {
+	init: function(_scope) {
 		var userId = _scope.profile.current.user_id;
 		var posttype = _scope.profile.posttype;
 		var low = _scope.profile.dotconfig.low;
@@ -13,12 +13,12 @@ var confetti = {
 			}
 		}
 
-		var data = function () {
+		var data = function() {
 			return _.filter(_scope.profile.posts, check);
 		};
 
 		d3.select("svg[name='posts'] ").remove();
-		
+
 		if (data().length != 0) {
 			var dotscale = parseInt(_scope.profile.dotconfig.scale);
 			var dist = parseInt(_scope.profile.dotconfig.dist);
@@ -41,10 +41,10 @@ var confetti = {
 
 			function tick(e) {
 				svg.selectAll("circle")
-					.attr("cx", function (d) { return d.x; })
-					.attr("cy", function (d) { return d.y; })
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; })
 					.on("click", addDot)
-					.on("mouseover", function (d, i) {
+					.on("mouseover", function(d, i) {
 						d3.select(this)
 							.attr({
 								fill: 'green !important'
@@ -52,18 +52,18 @@ var confetti = {
 							.style({
 								cursor: 'pointer'
 							});
-						
+
 						svg.append("text")
 							.attr({
 								id: 't' + d.postid,
-								x: function () { return d.x; },
-								y: function () { return d.y - (d.val() + dotscale + 10); }
+								x: function() { return d.x; },
+								y: function() { return d.y - (d.val() + dotscale + 10); }
 							})
 							.text(function() {
 								return d.val();
 							});
 					})
-					.on("mouseout", function (d, i) {
+					.on("mouseout", function(d, i) {
 						d3.select('#t' + d.postid).remove();
 					});
 			}
@@ -73,7 +73,7 @@ var confetti = {
 			}
 
 			function addDot(_dot) {
-				var count = _.filter(_scope.profile.dots, function (e) {
+				var count = _.filter(_scope.profile.dots, function(e) {
 					if (e.postid == _dot.postid) return e;
 				}).length;
 
@@ -92,6 +92,7 @@ var confetti = {
 			}
 
 			/* Добавление новой точки */
+
 			function addNode(d) {
 				var node = {
 					x: w / 2 + 2 * Math.random() - 1,
@@ -107,15 +108,15 @@ var confetti = {
 					.transition()
 					.duration(2000)
 					.ease(Math.sqrt)
-					.attr("class", function (e) { return e.type; })
-					.attr("xlink:href", function (e) { return e.url; })
-					.attr("r", function (e) { return e.val() + dotscale; });
+					.attr("class", function(e) { return e.type; })
+					.attr("xlink:href", function(e) { return e.url; })
+					.attr("r", function(e) { return e.val() + dotscale; });
 
 				return node;
 			}
 
 			var ind = 0;
-			var interval = setInterval(function () {
+			var interval = setInterval(function() {
 
 				nodes.push(addNode(data()[ind++]));
 
@@ -125,4 +126,5 @@ var confetti = {
 			}, 3);
 		}
 	}
-}
+};
+
