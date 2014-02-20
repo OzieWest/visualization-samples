@@ -9,54 +9,27 @@
 			border: 1px solid rgb(160, 160, 160);
 		}
 
-		select {
-			width: 100%;
-			height: 28px;
-			font-size: 16px;
-		}
-
-		.post {
-			fill: rgb(0, 184, 255);
-		}
-
-			.post:hover, .copy:hover {
-				stroke: black;
-			}
-
-		.copy {
-			fill: orange;
-		}
-
-		.col_1, .col_2, .col_3 {
-			width: 80px;
-		}
-
-		.ngrs-range-slider {
-			margin: 0 !important;
-		}
-
-		.nav, .pagination, .carousel, .panel-title a {
-			cursor: pointer;
-		}
-
 		.node {
 			stroke-width: 1.5px;
 		}
 
-		.mylink {
+		.edge {
 			stroke-width: 1px;
 			fill: none;
 		}
+
+		.breadcrumb a {
+			color: rgb(189, 189, 189);
+		}
+
+			.breadcrumb a:hover {
+				color: white;
+			}
 	</style>
 }
 
-@section header
-{
-	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
-}
-
 <div id="ctrlzone" ng-controller="treeController" style="display: none;">
-	
+
 	<div class="text-danger" ng-if="vkid.length == 0" style="font-size: 16px;">
 		{{ vkid }} ?id=your_id
 	</div>
@@ -66,41 +39,23 @@
 		<button ng-hide="lock" class="btn btn-info" ng-click="loadData()">Load Info</button>
 		<button ng-hide="calcWith() != 100" class="btn btn-info" ng-click="createGraph()">Create graph</button>
 
-		<div ng-show="calcWith() == 100" class="row">
-			<div class="col-sm-4">
-				<h4>Ignore border:</h4>
-				<div class="row" style="margin-bottom: 10px;">
-					<div class="col-sm-3">
-						<input type="text" ng-model="config.ignore" style="width: 80px;" />
-					</div>
-					<div class="col-sm-9">
-						<div range-slider min="0" max="1500" model-max="config.ignore" pin-handle="min"></div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-4">
-				<h4>Dot distance:</h4>
-				<div class="row" style="margin-bottom: 10px;">
-					<div class="col-sm-3">
-						<input type="text" ng-model="config.dist" style="width: 80px;" />
-					</div>
-					<div class="col-sm-9">
-						<div range-slider min="10" max="50" model-max="config.dist" pin-handle="min" step="10"></div>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-4">
-				<h4>Dot radius:</h4>
-				<div class="row" style="margin-bottom: 10px;">
-					<div class="col-sm-3">
-						<input type="text" ng-model="config.rad" style="width: 80px;" />
-					</div>
-					<div class="col-sm-9">
-						<div range-slider min="1" max="15" model-max="config.rad" pin-handle="min" step="1"></div>
-					</div>
-				</div>
-			</div>
-		</div>
+		<table style="margin-top: 10px;" ng-show="calcWith() == 100" class="table table-striped table-bordered">
+			<tr>
+				<td>Ignore border
+				</td>
+				<td><input type="text" ng-model="config.ignore" style="width: 60px;" /></td>
+			</tr>
+			<tr>
+				<td>Dot distance
+				</td>
+				<td><input type="text" ng-model="config.dist" style="width: 80px;" /></td>
+			</tr>
+			<tr>
+				<td>Dot radius
+				</td>
+				<td><input type="text" ng-model="config.rad" style="width: 80px;" /></td>
+			</tr>
+		</table>
 
 		<div style="margin-top: 20px;" svgfriend></div>
 	</div>
@@ -108,7 +63,7 @@
 
 @section scripts
 {
-	<script src="~/mainApp/svg.vk.friends.js"></script>
+	<script src="~/jsApp/svg.vk.profile.js"></script>
 	<script type="text/javascript">
 		'use sctrict';
 
@@ -157,7 +112,6 @@
 								$scope.load++;
 								if (typeof r != 'undefined' && r.length != 0) {
 									$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
-									console.log(f.name, r.length);
 								}
 							});
 						}, callTimer);
@@ -168,7 +122,6 @@
 
 			$scope.createGraph = function () {
 				var data = angular.copy($scope.bigdata);
-				localforage.setItem('data', data);
 
 				// Проверяем границу дозволенности по количеству френдов
 				if ($scope.config.ignore != 0) {
@@ -188,8 +141,39 @@
 					}));
 				});
 
+				var groupId = 1,
+					graph = { links: [], nodes: [], },
+					target = { uid: parseInt(vk_id), name: 'target', group: 1 };
+
+				graph.nodes.push(target);
+
+				_.each(data, function (e) {
+					if (e.friends.length != 0) {
+						groupId++;
+
+						// проход родитель
+						var p = { uid: e.uid, name: e.name.toString(), group: groupId };
+						if (!isNodeExist(graph.nodes, p)) graph.nodes.push(p);
+						var plink = { source: target.uid, target: p.uid };
+						if (!isLinkExist(graph.links, plink)) graph.links.push(plink);
+
+						// проход по детям
+						_.each(e.friends, function (f) {
+							var node = { uid: f.uid, name: f.last_name + ' ' + f.first_name, group: groupId };
+							if (!isNodeExist(graph.nodes, node)) graph.nodes.push(node);
+
+							var link = { source: p.uid, target: node.uid };
+							if (!isLinkExist(graph.links, link)) graph.links.push(link);
+						});
+					}
+				});
+
+				var w = function () { return $('div[svgfriend]').parent().width(); };
+				var h = 1500;
+				
 				// Создаем граф
-				graph.init(vk_id, data, $scope.config.dist, $scope.config.rad);
+				forcedgraph.init(w(), h, 'svgfriend', graph);
+				forcedgraph.start($scope.config.dist, $scope.config.rad);
 			};
 
 			$scope.createTable = function () {
@@ -230,6 +214,26 @@
 					counter++;
 				}
 				return _.uniq(idArray);
+			}
+			
+			function isNodeExist(nodes, node) {
+				var r = _.filter(nodes, function (n) {
+					if (n.uid == node.uid) return n;
+				});
+
+				if (r.length != 0) return true;
+				else return false;
+			}
+
+			function isLinkExist(links, link) {
+				var r = _.filter(links, function (l) {
+					if (l.source == link.source && l.target == link.target ||
+						l.source == link.target && l.target == link.source)
+						return l;
+				});
+
+				if (r.length != 0) return true;
+				else return false;
 			}
 
 			/* INIT */

@@ -20,9 +20,9 @@
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+	<script src="~/Scripts/angularjs/angular-sanitize.min.js"></script>
+	<script src="~/Scripts/angularjs/angular.rangeSlider.js"></script>
 	<script src="~/Scripts/ui-bootstrap-tpls-0.10.0.min.js"></script>
-	<script src="~/Scripts/angular.rangeSlider.js"></script>
-
 </head>
 
 <body class="background-dark">
@@ -46,7 +46,12 @@
 	<div class="content container">
 		<div class="row hidden-print">
 			<div class="col-md-12">
-				@RenderSection("header", required: true)
+				<ul style="font-size: 16px;" class="breadcrumb">
+					<li><a href='@Url.Action("index", "home")'>Letter Tree</a></li>
+					<li><a href='@Url.Action("lettergraph", "home")'>Letter Graph</a></li>
+					<li><a href='@Url.Action("posts", "vk")'>Vk post</a></li>
+					<li><a href='@Url.Action("profile", "vk")'>Vk profile</a></li>
+				</ul>
 			</div>
 		</div>
 		<div class="row" ng-app="vis.module">
@@ -58,8 +63,8 @@
 		</div>
 	</div>
 
-	<script src="~/mainApp/app.module.js"></script>
-	<script src="~/mainApp/app.service.js"></script>
+	<script src="~/jsApp/app.module.js"></script>
+	<script src="~/jsApp/app.service.js"></script>
 
 
 	@RenderSection("scripts", required: false)
