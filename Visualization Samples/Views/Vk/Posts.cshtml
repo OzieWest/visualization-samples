@@ -66,19 +66,31 @@
 					<a ng-show="profile.posts.length != 0" class="btn btn-warning btn-block" ng-click="clearPosts()">
 						<i class="glyphicon glyphicon-remove-circle"></i>Clear data
 					</a>
+					
+					<div ng-show="profile.posts.length != 0" class="checkbox">
+						<label>
+							<input type="checkbox" 
+								ng-model="graph.showLikes" 
+								ng-change="allInOneGraph()"> <span class="label" style="background: orange">Likes</span>
+						</label>
+					</div>
+					
+					<div ng-show="profile.posts.length != 0" class="checkbox">
+						<label>
+							<input type="checkbox" 
+								ng-model="graph.showComments" 
+								ng-change="allInOneGraph()"> <span class="label" style="background: #4ab0ce">Comments</span>
+						</label>
+					</div>
+					
+					<div ng-show="profile.posts.length != 0" class="checkbox">
+						<label>
+							<input type="checkbox" 
+								ng-model="graph.showReposts" 
+								ng-change="allInOneGraph()"> <span class="label" style="background: #91DF97">Reposts</span>
+						</label>
+					</div>
 
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="allInOneGraph()">
-						<i class="fa fa-retweet"></i>All in One
-					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('likes')">
-						<i class="fa fa-thumbs-up"></i>only Likes
-					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('comments')">
-						<i class="eicon-comment"></i>only Comments
-					</a>
-					<a ng-show="profile.posts.length != 0" class="btn btn-info btn-block" ng-click="createGraph('reposts')">
-						<i class="fa fa-retweet"></i>only Reposts
-					</a>
 					<select ng-show="profile.posts.length != 0" ng-options="renderer for renderer in graph.renderers" ng-model="graph.renderer"></select>
 				</div>
 			</div>
@@ -100,23 +112,6 @@
 				h="graph.h()">
 			</my-chart>
 		</div>
-
-		<table style="margin-top: 10px;" class="table table-bordered table-striped" ng-hide="profile.dots.length == 0">
-			<tr>
-				<td class="col_1">post id</td>
-				<td class="col_2">val</td>
-				<td class="col_3">type</td>
-				<td class="col_4">
-					<a ng-click="clearDots()" class="btn btn-inverse btn-block">Clear dots</a>
-				</td>
-			</tr>
-			<tr ng-repeat="d in profile.dots track by $index">
-				<td class="col_1">{{ d.postid }}</td>
-				<td class="col_2">{{ d.val }}</td>
-				<td class="col_3">{{ d.type }}</td>
-				<td class="col_4">{{ d.url }}</td>
-			</tr>
-		</table>
 	</div>
 </div>
 
@@ -134,14 +129,11 @@
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
 		mainModule.controller('treeController', function($scope, $timeout, vkService, show, vk_id) {
-			$scope.conf = { low: 0, high: 700, isBusy: true };
 			$scope.vkid = vk_id;
+			$scope.conf = { isBusy: true };
 			$scope.profile = {
 				current: {},
 				posts: [],
-				posttype: 'likes',
-				dots: [],
-				dotconfig: { scale: 5, dist: 50, low: $scope.conf.low, high: 50 }
 			};
 
 			/* Загружает список постов по ID пользователя */
@@ -165,15 +157,7 @@
 			$scope.clearDots = function() { $scope.profile.dots = []; };
 
 			/* Возвращает количество постов по типу параметра */
-			$scope.countPost = function(_type) {
-				return _.filter($scope.profile.posts, function(e) { if (e.post_type == _type) return e; });
-			};
-
-			/* Строит шаблон конфети */
-			$scope.showConfetti = function(_type) {
-				$scope.profile.posttype = _type;
-				confetti.init($scope);
-			};
+			$scope.countPost = function(_type) { return _.filter($scope.profile.posts, function(e) { if (e.post_type == _type) return e; }); };
 
 			/* FRIENDS */
 			$scope.friends = [];
@@ -200,8 +184,11 @@
 			$scope.getFriends(vk_id);
 
 			$scope.graph = {
+				showLikes: true,
+				showComments: true,
+				showReposts: true,
 				renderers: ['line', 'bar', 'scatterplot', 'area'],
-				renderer: 'bar',
+				renderer: 'line',
 				color: '#4ab0ce',
 				data: [{ data: [{ x: 0, y: 0 }], color: 'blue' }],
 				w: function() {
@@ -221,7 +208,7 @@
 			};
 
 			function getPosts(type) {
-				return _.compact(_.map($scope.profile.posts, function (e, i) {
+				return _.compact(_.map($scope.profile.posts, function(e, i) {
 					return {
 						x: i,
 						y: e[type].count,
@@ -230,27 +217,33 @@
 					};
 				}));
 			}
-			
-			$scope.allInOneGraph = function () {
+
+			$scope.allInOneGraph = function() {
 				$scope.graph.data = [];
-				
-				$scope.graph.data.push({
-					color: "orange",
-					data: getPosts('likes'),
-					name: 'likes'
-				});
-				
-				$scope.graph.data.push({
-					color: "#4ab0ce",
-					data: getPosts('comments'),
-					name: 'comments'
-				});
-				
-				$scope.graph.data.push({
-					color: "#91DF97",
-					data: getPosts('reposts'),
-					name: 'reposts'
-				});
+
+				if ($scope.graph.showLikes) {
+					$scope.graph.data.push({
+						color: "orange",
+						data: getPosts('likes'),
+						name: 'likes'
+					});
+				}
+
+				if ($scope.graph.showComments) {
+					$scope.graph.data.push({
+						color: "#4ab0ce",
+						data: getPosts('comments'),
+						name: 'comments'
+					});
+				}
+
+				if ($scope.graph.showReposts) {
+					$scope.graph.data.push({
+						color: "#91DF97",
+						data: getPosts('reposts'),
+						name: 'reposts'
+					});
+				}
 			};
 		});
 	</script>
