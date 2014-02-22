@@ -28,5 +28,10 @@ namespace Visualization_Samples.Controllers
 
 			return View("Profile", "_SecondLayout");
 		}
+
+		public ActionResult Groups()
+		{
+			return View("Groups", "_SecondLayout");
+		}
 	}
 }

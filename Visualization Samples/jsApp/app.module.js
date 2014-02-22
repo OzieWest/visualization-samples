@@ -56,7 +56,7 @@ angular.module('vis.directives', [])
 								
 								var label = document.createElement('span');
 								label.className = 'label';
-								label.innerHTML = d.name + ": " + d.formattedYValue;
+								label.innerHTML = d.name + ": " + d.value.y;
 								label.style.backgroundColor = d.series.color;
 
 								block.appendChild(label);
@@ -64,8 +64,13 @@ angular.module('vis.directives', [])
 
 								var dot = document.createElement('div');
 								dot.className = 'dot';
-								dot.style.top = graph.y(d.value.y0 + d.value.y) + 'px';
-								dot.style.borderColor = d.series.color;
+						
+								if (scope.renderer == 'bar' || scope.renderer == 'area')
+									dot.style.top = graph.y(d.value.y0 + d.value.y) + 'px';
+								else
+									dot.style.top = graph.y(d.value.y) + 'px';
+								
+								dot.style.borderColor = 'white';
 
 								this.element.appendChild(dot);
 
