@@ -125,7 +125,7 @@
 				}
 				// Получаем список ID которые всречаются более одного раза, 
 				// на основе него выираем нужных нам людей
-				var idArray = getListIntersection(data, vk_id);
+				var idArray = getListIntersection2(data, vk_id);
 				_.each(data, function (e) {
 					e.friends = _.compact(_.map(e.friends, function (f) {
 						if (_.contains(idArray, f.uid))
@@ -168,15 +168,6 @@
 				forcedgraph.start($scope.config.dist, $scope.config.rad);
 			};
 
-			$scope.createTable = function () {
-				var idArray = getListIntersection($scope.bigdata, vk_id);
-				_.each(idArray, function (e) {
-
-				});
-
-				graph.init(vk_id, data, config.dist, 4);
-			};
-
 			/* Возвращает список друзей которые пересекаются */
 
 			function getListIntersection(data, ownerId) {
@@ -200,6 +191,30 @@
 
 							if (typeof d != 'undefined' && d.length != 0) {
 								_.each(d, function (e) { idArray.push(e); });
+							}
+						}
+					}
+					counter++;
+				}
+				return _.uniq(idArray);
+			}
+			
+			function getListIntersection2(data, ownerId) {
+				var idArray = [];
+				var counter = 0;
+				for (var i = 0; i < data.length; i++) {
+					var current = _.map(data[i].friends, function (f) {
+						return f.uid;
+					});
+					for (var j = counter; j < data.length; j++) {
+						if (i !== j) {
+							var result = _.find(current, function (e) {
+								if (e == data[j].uid) return e;
+							});
+
+							if (typeof result != 'undefined') {
+								idArray.push(result);
+								idArray.push(data[i].uid);
 							}
 						}
 					}

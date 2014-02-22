@@ -19,19 +19,29 @@ namespace Visualization_Samples.Controllers
 			return View("Posts", "_SecondLayout");
 		}
 
-		public ActionResult Profile()
+		public ActionResult Profiles()
 		{
 			if (!Request.QueryString["id"].IsEmpty())
 			{
 				ViewBag.ID = Request.QueryString["id"];
 			}
 
-			return View("Profile", "_SecondLayout");
+			return View("profiles", "_SecondLayout");
 		}
 
 		public ActionResult Groups()
 		{
-			return View("Groups", "_SecondLayout");
+			return View("groups", "_SecondLayout");
+		}
+
+		public ActionResult Test()
+		{
+			if (!Request.QueryString["id"].IsEmpty())
+			{
+				ViewBag.ID = Request.QueryString["id"];
+			}
+
+			return View("test", "_SecondLayout");
 		}
 	}
 }

@@ -1,0 +1,300 @@
+﻿@using System.Configuration
+@{
+	ViewBag.Title = "D3.js";
+}
+
+@section style{
+	<style>
+		#graph-container {
+			border: 1px solid gray;
+		}
+	</style>
+}
+
+<div id="ctrlzone" ng-controller="treeController" style="display: none;">
+	<div class="text-danger" ng-if="vkid.length == 0" style="font-size: 16px;">
+		{{ vkid }} ?id=your_id
+	</div>
+	<progressbar ng-show="lock && calcWith() != 100" class="progress-striped active" value="calcWith()" type="info">loading...</progressbar>
+	<button ng-hide="lock" class="btn btn-info" ng-click="loadData()">Load Info</button>
+	<button ng-hide="calcWith() != 100" class="btn btn-info" ng-click="createGraph()">Create graph</button>
+	<div id="graph-container"></div>
+</div>
+
+@section scripts
+{
+	<script src="~/Scripts/sigma/sigma.core.js"></script>
+	<script src="~/Scripts/sigma/conrad.js"></script>
+	<script src="~/Scripts/sigma/utils/sigma.utils.js"></script>
+	<script src="~/Scripts/sigma/utils/sigma.polyfills.js"></script>
+	<script src="~/Scripts/sigma/sigma.settings.js"></script>
+	<script src="~/Scripts/sigma/classes/sigma.classes.dispatcher.js"></script>
+	<script src="~/Scripts/sigma/classes/sigma.classes.configurable.js"></script>
+	<script src="~/Scripts/sigma/classes/sigma.classes.graph.js"></script>
+	<script src="~/Scripts/sigma/classes/sigma.classes.camera.js"></script>
+	<script src="~/Scripts/sigma/classes/sigma.classes.quad.js"></script>
+	<script src="~/Scripts/sigma/captors/sigma.captors.mouse.js"></script>
+	<script src="~/Scripts/sigma/captors/sigma.captors.touch.js"></script>
+	<script src="~/Scripts/sigma/renderers/sigma.renderers.canvas.js"></script>
+	<script src="~/Scripts/sigma/renderers/sigma.renderers.webgl.js"></script>
+	<script src="~/Scripts/sigma/renderers/sigma.renderers.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+	<script src="~/Scripts/sigma/renderers/webgl/sigma.webgl.edges.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+	<script src="~/Scripts/sigma/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+	<script src="~/Scripts/sigma/renderers/canvas/sigma.canvas.labels.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/canvas/sigma.canvas.edges.def.js"></script>
+	<script src="~/Scripts/sigma/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+	<script src="~/Scripts/sigma/middlewares/sigma.middlewares.rescale.js"></script>
+	<script src="~/Scripts/sigma/middlewares/sigma.middlewares.copy.js"></script>
+	<script src="~/Scripts/sigma/misc/sigma.misc.animation.js"></script>
+	<script src="~/Scripts/sigma/misc/sigma.misc.bindEvents.js"></script>
+	<script src="~/Scripts/sigma/misc/sigma.misc.drawHovers.js"></script>
+
+	<script type="text/javascript">
+		'use sctrict';
+
+		$(document).ready(function() { $('#ctrlzone').show(); });
+
+		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
+		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
+
+		var sigmaG = {};
+
+		mainModule.controller('treeController', function($scope, $timeout, vkService, show, vk_id) {
+			var myfriends = [];
+			var callTimer = 0;
+
+			$scope.vkid = vk_id;
+
+			$scope.bigdata = [];
+			$scope.load = 0;
+			$scope.lock = false;
+
+			/* FRIENDS ----------------------------------------------------------- */
+			$scope.getFriends = function(id) {
+				if (!_.isEmpty(id)) {
+					vkService.friendsGet(id, 'last_name').then(function(r) {
+						myfriends = angular.copy(r);
+						localforage.setItem('users', angular.copy(r));
+					});
+				}
+			};
+
+			$scope.calcWith = function() {
+				return $scope.load / myfriends.length * 100;
+			};
+
+			$scope.loadData = function() {
+				if (!$scope.lock) {
+					var friends = _.map(myfriends, function(r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
+					_.each(friends, function(f) {
+						callTimer += 1000;
+						$timeout(function() {
+							vkService.friendsGet(f.uid, 'last_name').then(function(r) {
+								$scope.load++;
+								if (typeof r != 'undefined' && r.length != 0) {
+									$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
+								}
+							});
+						}, callTimer);
+					});
+				}
+				$scope.lock = true;
+			};
+
+			/* GRAPH  ----------------------------------------------------------- */
+			var color = d3.scale.category20();
+			$scope.createGraph = function() {
+				var data = angular.copy($scope.bigdata);
+
+				var idArray = getListIntersection2(data, vk_id);
+				var cor = 0;
+				_.each(data, function(e) {
+					e.friends = _.compact(_.map(e.friends, function(f) {
+						if (_.contains(idArray, f.uid)) {
+							return f;
+						}
+					}));
+				});
+
+				_.each(data, function(e) {
+					_.each(e.friends, function() {
+						cor++;
+					});
+				});
+
+				console.log('cor', cor);
+
+				var group = 1,
+					g = { edges: [], nodes: [], },
+					target = create.node(parseInt(vk_id), 'target', group);
+
+				target.color = '#4ab0ce';
+				g.nodes.push(target);
+
+				_.each(data, function(e) {
+					if (e.friends.length != 0) {
+						group++;
+
+						var p = create.node(e.uid, e.name, group);
+						if (!isNodeExist(g.nodes, p))
+							g.nodes.push(p);
+
+						var pedge = create.edge(target.id + p.id, target.id, p.id, group);
+						if (!isLinkExist(g.edges, pedge)) g.edges.push(pedge);
+
+						_.each(e.friends, function(f) {
+							var node = create.node(f.uid, f.last_name + ' ' + f.first_name, group);
+							if (!isNodeExist(g.nodes, node))
+								g.nodes.push(node);
+
+							var edge = create.edge(p.id + node.id, p.id, node.id, group);
+							if (!isLinkExist(g.edges, edge)) g.edges.push(edge);
+						});
+					}
+				});
+
+				console.log('ni', ni);
+
+				$('#chart').remove();
+				var d = document.createElement('div');
+				d.id = 'chart';
+				$('#graph-container').append(d);
+				$('#chart').height(600);
+
+				sigmaG = new sigma({
+					graph: g,
+					container: 'chart'
+				});
+
+				//var w = function() { return $('div[svgfriend]').parent().width(); };
+				//var h = 1500;
+			};
+
+			var L = 1;
+			var ni = 0;
+
+			var create = {
+				node: function(id, label, c) {
+					ni++;
+					var o = {
+						id: id.toString(),
+						label: label,
+						circular_x: L * Math.cos(Math.PI * 2 * ni / $scope.bigdata.length - Math.PI / 2),
+						circular_y: L * Math.sin(Math.PI * 2 * ni / $scope.bigdata.length - Math.PI / 2),
+						circular_size: 1,
+						circular_color: 'lightgray'
+					};
+
+					['x', 'y', 'size', 'color'].forEach(function(val) {
+						o[val] = o['circular_' + val];
+					});
+
+					return o;
+
+					//return {
+					//	id: id.toString(),
+					//	label: label,
+					//	x: Math.random(),
+					//	y: Math.random(),
+					//	size: 1,
+					//	color: color(c)
+					//};
+				},
+				edge: function(id, s, t, c) {
+					return {
+						id: id,
+						source: s,
+						target: t,
+						size: 1,
+						color: color(c)
+					};
+				}
+			};
+
+			function getListIntersection(data, ownerId) {
+				var idArray = [];
+				var counter = 0;
+				for (var i = 0; i < data.length; i++) {
+					for (var j = counter; j < data.length; j++) {
+						if (i !== j) {
+							var current = _.compact(_.map(data[i].friends, function(f) {
+								if (f.uid !== ownerId)
+									return f.uid;
+							}));
+							var next = _.compact(_.map(data[j].friends, function(f) {
+								if (f.uid !== ownerId)
+									return f.uid;
+							}));
+							var d = _.filter(_.intersection(current, next), function(r) {
+								if (r.uid !== ownerId)
+									return r;
+							});
+
+							if (typeof d != 'undefined' && d.length != 0) {
+								_.each(d, function(e) { idArray.push(e); });
+							}
+						}
+					}
+					counter++;
+				}
+				return _.uniq(idArray);
+			}
+
+			function getListIntersection2(data, ownerId) {
+				var idArray = [];
+				var counter = 0;
+				for (var i = 0; i < data.length; i++) {
+					var current = _.compact(_.map(data[i].friends, function (f) {
+						if (f.uid !== ownerId)
+							return f.uid;
+					}));
+					for (var j = counter; j < data.length; j++) {
+						if (i !== j) {
+							var result = _.find(current, function (e) {
+								if(e == data[j].uid) return e;
+							});
+
+							if (typeof result != 'undefined') {
+								idArray.push(result);
+								idArray.push(data[i].uid);
+							}
+						}
+					}
+					counter++;
+				}
+				return _.uniq(idArray);
+			}
+
+			function isNodeExist(nodes, node) {
+				var result = _.find(nodes, function(n) {
+					if (n.id === node.id) {
+						n.size += 1;
+						return n;
+					}
+				});
+
+				if (typeof result == 'undefined') return false;
+				else return true;
+			}
+
+			function isLinkExist(links, link) {
+				var r = _.filter(links, function(l) {
+					if (l.source === link.source && l.target === link.target ||
+						l.source === link.target && l.target === link.source)
+						return l;
+				});
+
+				if (r.length != 0) return true;
+				else return false;
+			}
+
+			// INIT ------------------------------------------------------------
+			$scope.getFriends(vk_id);
+		});
+	</script>
+}
