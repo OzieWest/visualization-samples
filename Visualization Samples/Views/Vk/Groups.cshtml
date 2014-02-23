@@ -189,7 +189,7 @@
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		
-		mainModule.controller('groupController', function ($scope, $log, vkService, show) {
+		mainModule.controller('groupController', function ($scope, $log, vkService) {
 			$scope.g = {
 				search: getParameterByName('name'),
 				current: { gid: 0 },

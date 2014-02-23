@@ -3,7 +3,6 @@
 var mainModule = angular.module('vis.module', [
 	'ngSanitize',
 	'ui.bootstrap',
-	'ui-rangeSlider',
 	'vis.service',
 	'vis.directives'
 ]);
@@ -93,6 +92,3 @@ angular.module('vis.directives', [])
 			}
 		};
 	});
-
-
-mainModule.value('show', toastr);

@@ -7,244 +7,240 @@
 	<style>
 		svg {
 			border: 1px solid rgb(160, 160, 160);
+			width: 100%;
+			height: 100%;
 		}
 
-		.node {
-			stroke-width: 1.5px;
-		}
-
-		.edge {
-			stroke-width: 1px;
-			fill: none;
+		#vivaContainer {
+			margin-top: 10px;
+			width: 100%;
+			height: 650px;
 		}
 	</style>
 }
 
-<div id="ctrlzone" ng-controller="treeController" style="display: none;">
+<div id="ctrlzone" style="display: none;" ng-controller="mainController">
 
-	<div class="text-danger" ng-if="vkid.length == 0" style="font-size: 16px;">
-		{{ vkid }} ?id=your_id
+	<div class="text-danger" ng-if="ownerid.length == 0" style="font-size: 16px;">
+		?id=your_id
 	</div>
 
-	<div ng-if="vkid.length != 0">
+	<div ng-if="ownerid.length != 0">
 		<progressbar ng-show="lock && calcWith() != 100" class="progress-striped active" value="calcWith()" type="info">loading...</progressbar>
-		<button ng-hide="lock" class="btn btn-info" ng-click="loadData()">Load Info</button>
-		<button ng-hide="calcWith() != 100" class="btn btn-info" ng-click="createGraph()">Create graph</button>
+		<button ng-show="!lock && calcWith() != 100" class="btn btn-info" ng-click="loadData()">Load full data</button>
 
-		<table style="margin-top: 10px;" ng-show="calcWith() == 100" class="table table-striped table-bordered">
+		<table ng-show="!created && calcWith() == 100" style="margin-top: 10px;" class="table table-striped table-bordered">
 			<tr>
-				<td>Ignore border
+				<td>
+					<button class="btn btn-info" ng-click="createGraph()">Create graph</button>
 				</td>
-				<td><input type="text" ng-model="config.ignore" style="width: 60px;" /></td>
-			</tr>
-			<tr>
-				<td>Dot distance
-				</td>
-				<td><input type="text" ng-model="config.dist" style="width: 80px;" /></td>
-			</tr>
-			<tr>
-				<td>Dot radius
-				</td>
-				<td><input type="text" ng-model="config.rad" style="width: 80px;" /></td>
 			</tr>
 		</table>
-
-		<div style="margin-top: 20px;" svgfriend></div>
+		<div id="vivaContainer"></div>
 	</div>
 </div>
 
 @section scripts
 {
-	<script src="~/jsApp/svg.vk.profile.js"></script>
 	<script type="text/javascript">
 		'use sctrict';
 
-		$(document).ready(function () { $('#ctrlzone').show(); });
+		var owid = '@Html.Raw(ViewBag.ID)';
+
+		var bd = { friends: [], bigdata: [], graph: {} };
+
+		$(document).ready(function () {
+			$('#ctrlzone').show();
+
+			if (owid.length != 0) {
+				bd.graph = Viva.Graph.graph();
+
+				var graphics = Viva.Graph.View.svgGraphics();
+
+				var highlightRelatedNodes = function (nodeId, isOn) {
+					bd.graph.forEachLinkedNode(nodeId, function (node, link) {
+						var l = graphics.getLinkUI(link.id);
+						if (l) l.attr('stroke', isOn ? 'red' : 'gray');
+					});
+				};
+
+				graphics.node(function (node) {
+					var ui = Viva.Graph.svg('image')
+						.attr('width', 24)
+						.attr('height', 24)
+						.link(node.data.img);
+
+					ui.append('title').text(node.data.name);
+
+					$(ui).hover(function () {
+						highlightRelatedNodes(node.id, true);
+					}, function () {
+						highlightRelatedNodes(node.id, false);
+					});
+
+					return ui;
+				});
+
+				graphics.placeNode(function (nodeUI, pos) {
+					nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
+				});
+
+				bd.graph.addNode('target', { img: '../Content/target.png', name: 'target' });
+				var renderer = Viva.Graph.View.renderer(bd.graph, {
+					graphics: graphics,
+					container: document.getElementById('vivaContainer')
+				}
+				);
+				renderer.run();
+			}
+		});
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
-		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
+		mainModule.value('ownerid', owid);
 
-		mainModule.controller('treeController', function ($scope, $timeout, vkService, show, vk_id) {
-			var myfriends = [];
-			var callTimer = 0;
-
-			$scope.vkid = vk_id;
-
-			$scope.bigdata = [];
-			$scope.load = 0;
-			$scope.lock = false;
-			$scope.config = {
-				ignore: 150,
-				dist: 30,
-				rad: 5,
+		mainModule.factory('sharedRepo', function (mockService) {
+			var repo = {
+				data: [],
+				friends: []
 			};
 
-			/* Загружает список постов по ID пользователя */
-			/* FRIENDS */
-			$scope.getFriends = function (id) {
-				if (!_.isEmpty(id)) {
-					vkService.friendsGet(id, 'last_name').then(function (r) {
-						myfriends = angular.copy(r);
-						localforage.setItem('users', angular.copy(r));
-					});
+			return {
+				get: function () {
+					return repo;
+					//return mockService.get();
 				}
 			};
+		});
 
-			$scope.calcWith = function () {
-				return $scope.load / myfriends.length * 100;
-			};
+		mainModule.controller('mainController', ['$scope', '$timeout', 'sharedRepo', 'vkService', 'ownerid',
+			function (s, t, sharedRepo, vk, ownerid) {
+				var repo = sharedRepo.get(),
+					callTimer = 0;
 
-			$scope.loadData = function () {
-				if (!$scope.lock) {
-					var friends = _.map(myfriends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
-					_.each(friends, function (f) {
-						callTimer += 1000;
-						$timeout(function () {
-							vkService.friendsGet(f.uid, 'last_name').then(function (r) {
-								$scope.load++;
-								if (typeof r != 'undefined' && r.length != 0) {
-									$scope.bigdata.push({ uid: f.uid, name: f.name, friends: r });
-								}
-							});
-						}, callTimer);
-					});
-				}
-				$scope.lock = true;
-			};
+				s.ownerid = ownerid;
+				s.load = 0;
+				s.lock = false;
+				s.created = false;
 
-			$scope.createGraph = function () {
-				var data = angular.copy($scope.bigdata);
+				s.getFriends = function (id) {
+					if (!_.isEmpty(id)) {
+						vk.friendsGet(id, 'last_name,photo').then(function (r) {
+							repo.friends = angular.copy(r);
 
-				// Проверяем границу дозволенности по количеству френдов
-				if ($scope.config.ignore != 0) {
-					_.each(data, function (d) {
-						if (d.friends.length > $scope.config.ignore) {
-							d.friends = [];
-						}
-					});
-				}
-				// Получаем список ID которые всречаются более одного раза, 
-				// на основе него выираем нужных нам людей
-				var idArray = getListIntersection2(data, vk_id);
-				_.each(data, function (e) {
-					e.friends = _.compact(_.map(e.friends, function (f) {
-						if (_.contains(idArray, f.uid))
-							return f;
-					}));
-				});
+							addToGraph(repo.friends, 'target');
 
-				var groupId = 1,
-					graph = { links: [], nodes: [], },
-					target = { uid: parseInt(vk_id), name: 'target', group: 1 };
-
-				graph.nodes.push(target);
-
-				_.each(data, function (e) {
-					if (e.friends.length != 0) {
-						groupId++;
-
-						// проход родитель
-						var p = { uid: e.uid, name: e.name.toString(), group: groupId };
-						if (!isNodeExist(graph.nodes, p)) graph.nodes.push(p);
-						var plink = { source: target.uid, target: p.uid };
-						if (!isLinkExist(graph.links, plink)) graph.links.push(plink);
-
-						// проход по детям
-						_.each(e.friends, function (f) {
-							var node = { uid: f.uid, name: f.last_name + ' ' + f.first_name, group: groupId };
-							if (!isNodeExist(graph.nodes, node)) graph.nodes.push(node);
-
-							var link = { source: p.uid, target: node.uid };
-							if (!isLinkExist(graph.links, link)) graph.links.push(link);
+							bd.friends = angular.copy(r);
 						});
 					}
-				});
+				};
 
-				var w = function () { return $('div[svgfriend]').parent().width(); };
-				var h = 1500;
-				
-				// Создаем граф
-				forcedgraph.init(w(), h, 'svgfriend', graph);
-				forcedgraph.start($scope.config.dist, $scope.config.rad);
-			};
+				s.calcWith = function () {
+					//return 100;
+					return s.load / repo.friends.length * 100;
+				};
 
-			/* Возвращает список друзей которые пересекаются */
-
-			function getListIntersection(data, ownerId) {
-				var idArray = [];
-				var counter = 0;
-				for (var i = 0; i < data.length; i++) {
-					for (var j = counter; j < data.length; j++) {
-						if (i !== j) {
-							var current = _.compact(_.map(data[i].friends, function (f) {
-								if (f.uid !== ownerId)
-									return f.uid;
-							}));
-							var next = _.compact(_.map(data[j].friends, function (f) {
-								if (f.uid !== ownerId)
-									return f.uid;
-							}));
-							var d = _.filter(_.intersection(current, next), function (r) {
-								if (r.uid !== ownerId)
-									return r;
-							});
-
-							if (typeof d != 'undefined' && d.length != 0) {
-								_.each(d, function (e) { idArray.push(e); });
-							}
-						}
+				s.loadData = function () {
+					if (!s.lock) {
+						var data = _.map(repo.friends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
+						_.each(data, function (f) {
+							callTimer += 1000;
+							t(function () {
+								vk.friendsGet(f.uid, 'last_name,photo').then(function (r) {
+									s.load++;
+									if (typeof r != 'undefined' && r.length != 0) {
+										repo.data.push({ uid: f.uid, name: f.name, friends: r });
+									}
+								});
+							}, callTimer);
+						});
 					}
-					counter++;
-				}
-				return _.uniq(idArray);
-			}
-			
-			function getListIntersection2(data, ownerId) {
-				var idArray = [];
-				var counter = 0;
-				for (var i = 0; i < data.length; i++) {
-					var current = _.map(data[i].friends, function (f) {
-						return f.uid;
+					s.lock = true;
+				};
+
+				s.createGraph = function () {
+					s.created = true;
+					var data = angular.copy(repo.data);
+
+					var idArray = getListIntersection2(data, ownerid);
+					_.each(data, function (e) {
+						e.friends = _.compact(_.map(e.friends, function (f) {
+							if (_.contains(idArray, f.uid)) return f;
+						}));
 					});
-					for (var j = counter; j < data.length; j++) {
-						if (i !== j) {
-							var result = _.find(current, function (e) {
-								if (e == data[j].uid) return e;
-							});
 
-							if (typeof result != 'undefined') {
-								idArray.push(result);
-								idArray.push(data[i].uid);
-							}
+					console.log(data);
+
+					_.each(data, function (e) {
+						_.each(e.friends, function (f) {
+							bd.graph.addNode(f.uid, { img: f.photo, name: f.last_name + ' ' + f.first_name });
+							bd.graph.addLink(e.uid, f.uid);
+						});
+					});
+				};
+
+				function addToGraph(data, owner) {
+					_.each(data, function (e) {
+						bd.graph.addNode(e.uid, { img: e.photo, name: e.last_name + ' ' + e.first_name });
+						bd.graph.addLink(owner, e.uid);
+					});
+				}
+
+				s.getFriends(s.ownerid);
+			}]);
+
+		function getListIntersection(data, ownerId) {
+			var idArray = [];
+			var counter = 0;
+			for (var i = 0; i < data.length; i++) {
+				for (var j = counter; j < data.length; j++) {
+					if (i !== j) {
+						var current = _.compact(_.map(data[i].friends, function (f) {
+							if (f.uid !== ownerId)
+								return f.uid;
+						}));
+						var next = _.compact(_.map(data[j].friends, function (f) {
+							if (f.uid !== ownerId)
+								return f.uid;
+						}));
+						var d = _.filter(_.intersection(current, next), function (r) {
+							if (r.uid !== ownerId)
+								return r;
+						});
+
+						if (typeof d != 'undefined' && d.length != 0) {
+							_.each(d, function (e) { idArray.push(e); });
 						}
 					}
-					counter++;
 				}
-				return _.uniq(idArray);
+				counter++;
 			}
-			
-			function isNodeExist(nodes, node) {
-				var r = _.filter(nodes, function (n) {
-					if (n.uid == node.uid) return n;
-				});
+			return _.uniq(idArray);
+		}
 
-				if (r.length != 0) return true;
-				else return false;
+		function getListIntersection2(data, ownerId) {
+			var idArray = [];
+			var counter = 0;
+			for (var i = 0; i < data.length; i++) {
+				var current = _.compact(_.map(data[i].friends, function (f) {
+					if (f.uid !== ownerId)
+						return f.uid;
+				}));
+				for (var j = counter; j < data.length; j++) {
+					if (i !== j) {
+						var result = _.find(current, function (e) {
+							if (e == data[j].uid) return e;
+						});
+
+						if (typeof result != 'undefined') {
+							idArray.push(result);
+							idArray.push(data[i].uid);
+						}
+					}
+				}
+				counter++;
 			}
+			return _.uniq(idArray);
+		}
 
-			function isLinkExist(links, link) {
-				var r = _.filter(links, function (l) {
-					if (l.source == link.source && l.target == link.target ||
-						l.source == link.target && l.target == link.source)
-						return l;
-				});
-
-				if (r.length != 0) return true;
-				else return false;
-			}
-
-			/* INIT */
-			$scope.getFriends(vk_id);
-		});
 	</script>
 }
