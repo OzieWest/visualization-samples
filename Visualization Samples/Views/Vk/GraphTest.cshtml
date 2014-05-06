@@ -22,7 +22,7 @@
 <div id="ctrlzone" style="display: none;" ng-controller="mainController">
 
 	<div class="text-danger" ng-if="ownerid.length == 0" style="font-size: 16px;">
-		?id=person_id
+		?id=your_id
 	</div>
 
 	<div ng-if="ownerid.length != 0">
@@ -107,6 +107,7 @@
 			return {
 				get: function () {
 					return repo;
+					//return mockService.get();
 				}
 			};
 		});
@@ -148,7 +149,6 @@
 									s.load++;
 									if (typeof r != 'undefined' && r.length != 0) {
 										repo.data.push({ uid: f.uid, name: f.name, friends: r });
-										bd.bigdata.push({ uid: f.uid, name: f.name, friends: r });
 									}
 								});
 							}, callTimer);

@@ -20,6 +20,9 @@
 	<script src="~/Scripts/angularjs/angular-sanitize.min.js"></script>
 	<script src="~/Scripts/angularjs/angular.rangeSlider.js"></script>
 	<script src="~/Scripts/ui-bootstrap-tpls-0.10.0.min.js"></script>
+	<style>
+		@RenderSection("css", required: false)
+	</style>
 </head>
 
 <body class="background-dark">
@@ -36,6 +39,7 @@
 				<ul id="forms-collapse" class="panel-collapse">
 					<li><a href='@Url.Action("Index", "Home")'>Letter Tree</a></li>
 					<li><a href='@Url.Action("LetterGraph", "Home")'>Letter Graph</a></li>
+					<li><a href='@Url.Action("MindMap", "Home")'>MindMap</a></li>
 					<li><a href='@Url.Action("posts", "vk")'>Vk post</a></li>
 					<li><a href='@Url.Action("profiles", "vk")'>Vk profile</a></li>
 					<li><a href='@Url.Action("groups", "vk")'>Vk group</a></li>
@@ -64,7 +68,7 @@
 					@RenderSection("header", required: true)
 				</div>
 			</div>
-			<div class="row" ng-app="vis.module">
+			<div class="row">
 				<div class="col-md-12">
 					<section class="widget">
 						@RenderBody()

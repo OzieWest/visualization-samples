@@ -22,5 +22,10 @@ namespace Visualization_Samples.Controllers
 		{
 			return View();
 		}
+
+		public ActionResult MindMap()
+		{
+			return View();
+		}
 	}
 }
