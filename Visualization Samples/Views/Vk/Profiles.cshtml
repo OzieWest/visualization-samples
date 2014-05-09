@@ -49,7 +49,7 @@
 
 		var bd = { friends: [], bigdata: [], graph: {} };
 
-		$(document).ready(function () {
+		$(document).ready(function() {
 			$('#ctrlzone').show();
 
 			if (owid.length != 0) {
@@ -57,14 +57,16 @@
 
 				var graphics = Viva.Graph.View.svgGraphics();
 
-				var highlightRelatedNodes = function (nodeId, isOn) {
-					bd.graph.forEachLinkedNode(nodeId, function (node, link) {
+				var highlightRelatedNodes = function(nodeId, isOn) {
+					bd.graph.forEachLinkedNode(nodeId, function(node, link) {
 						var l = graphics.getLinkUI(link.id);
-						if (l) l.attr('stroke', isOn ? 'red' : 'gray');
+						if (l) {
+							l.attr('stroke', isOn ? 'red' : 'gray');
+						}
 					});
 				};
 
-				graphics.node(function (node) {
+				graphics.node(function(node) {
 					var ui = Viva.Graph.svg('image')
 						.attr('width', 24)
 						.attr('height', 24)
@@ -72,24 +74,24 @@
 
 					ui.append('title').text(node.data.name);
 
-					$(ui).hover(function () {
+					$(ui).hover(function() {
 						highlightRelatedNodes(node.id, true);
-					}, function () {
+					}, function() {
 						highlightRelatedNodes(node.id, false);
 					});
 
 					return ui;
 				});
 
-				graphics.placeNode(function (nodeUI, pos) {
+				graphics.placeNode(function(nodeUI, pos) {
 					nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
 				});
 
 				bd.graph.addNode('target', { img: '../Content/target.png', name: 'target' });
 				var renderer = Viva.Graph.View.renderer(bd.graph, {
-					graphics: graphics,
-					container: document.getElementById('vivaContainer')
-				}
+						graphics: graphics,
+						container: document.getElementById('vivaContainer')
+					}
 				);
 				renderer.run();
 			}
@@ -98,21 +100,21 @@
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('ownerid', owid);
 
-		mainModule.factory('sharedRepo', function (mockService) {
+		mainModule.factory('sharedRepo', function(mockService) {
 			var repo = {
 				data: [],
 				friends: []
 			};
 
 			return {
-				get: function () {
+				get: function() {
 					return repo;
 				}
 			};
 		});
 
 		mainModule.controller('mainController', ['$scope', '$timeout', 'sharedRepo', 'vkService', 'ownerid',
-			function (s, t, sharedRepo, vk, ownerid) {
+			function(s, t, sharedRepo, vk, ownerid) {
 				var repo = sharedRepo.get(),
 					callTimer = 0;
 
@@ -121,9 +123,9 @@
 				s.lock = false;
 				s.created = false;
 
-				s.getFriends = function (id) {
+				s.getFriends = function(id) {
 					if (!_.isEmpty(id)) {
-						vk.friendsGet(id, 'last_name,photo').then(function (r) {
+						vk.friendsGet(id, 'last_name,photo').then(function(r) {
 							repo.friends = angular.copy(r);
 
 							addToGraph(repo.friends, 'target');
@@ -133,18 +135,18 @@
 					}
 				};
 
-				s.calcWith = function () {
+				s.calcWith = function() {
 					//return 100;
 					return s.load / repo.friends.length * 100;
 				};
 
-				s.loadData = function () {
+				s.loadData = function() {
 					if (!s.lock) {
-						var data = _.map(repo.friends, function (r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
-						_.each(data, function (f) {
+						var data = _.map(repo.friends, function(r) { return { uid: r.uid, name: r.last_name + ' ' + r.first_name }; });
+						_.each(data, function(f) {
 							callTimer += 1000;
-							t(function () {
-								vk.friendsGet(f.uid, 'last_name,photo').then(function (r) {
+							t(function() {
+								vk.friendsGet(f.uid, 'last_name,photo').then(function(r) {
 									s.load++;
 									if (typeof r != 'undefined' && r.length != 0) {
 										repo.data.push({ uid: f.uid, name: f.name, friends: r });
@@ -157,21 +159,21 @@
 					s.lock = true;
 				};
 
-				s.createGraph = function () {
+				s.createGraph = function() {
 					s.created = true;
 					var data = angular.copy(repo.data);
 
 					var idArray = getListIntersection2(data, ownerid);
-					_.each(data, function (e) {
-						e.friends = _.compact(_.map(e.friends, function (f) {
+					_.each(data, function(e) {
+						e.friends = _.compact(_.map(e.friends, function(f) {
 							if (_.contains(idArray, f.uid)) return f;
 						}));
 					});
 
 					console.log(data);
 
-					_.each(data, function (e) {
-						_.each(e.friends, function (f) {
+					_.each(data, function(e) {
+						_.each(e.friends, function(f) {
 							bd.graph.addNode(f.uid, { img: f.photo, name: f.last_name + ' ' + f.first_name });
 							bd.graph.addLink(e.uid, f.uid);
 						});
@@ -179,7 +181,7 @@
 				};
 
 				function addToGraph(data, owner) {
-					_.each(data, function (e) {
+					_.each(data, function(e) {
 						bd.graph.addNode(e.uid, { img: e.photo, name: e.last_name + ' ' + e.first_name });
 						bd.graph.addLink(owner, e.uid);
 					});
@@ -194,21 +196,21 @@
 			for (var i = 0; i < data.length; i++) {
 				for (var j = counter; j < data.length; j++) {
 					if (i !== j) {
-						var current = _.compact(_.map(data[i].friends, function (f) {
+						var current = _.compact(_.map(data[i].friends, function(f) {
 							if (f.uid !== ownerId)
 								return f.uid;
 						}));
-						var next = _.compact(_.map(data[j].friends, function (f) {
+						var next = _.compact(_.map(data[j].friends, function(f) {
 							if (f.uid !== ownerId)
 								return f.uid;
 						}));
-						var d = _.filter(_.intersection(current, next), function (r) {
+						var d = _.filter(_.intersection(current, next), function(r) {
 							if (r.uid !== ownerId)
 								return r;
 						});
 
 						if (typeof d != 'undefined' && d.length != 0) {
-							_.each(d, function (e) { idArray.push(e); });
+							_.each(d, function(e) { idArray.push(e); });
 						}
 					}
 				}
@@ -221,13 +223,13 @@
 			var idArray = [];
 			var counter = 0;
 			for (var i = 0; i < data.length; i++) {
-				var current = _.compact(_.map(data[i].friends, function (f) {
+				var current = _.compact(_.map(data[i].friends, function(f) {
 					if (f.uid !== ownerId)
 						return f.uid;
 				}));
 				for (var j = counter; j < data.length; j++) {
 					if (i !== j) {
-						var result = _.find(current, function (e) {
+						var result = _.find(current, function(e) {
 							if (e == data[j].uid) return e;
 						});
 

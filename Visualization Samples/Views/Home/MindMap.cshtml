@@ -2,11 +2,14 @@
 	ViewBag.Title = "D3.js";
 }
 
-@section css
+@section style
 {
-	li {
-		padding-left: 10px;
-	}
+	<link href="~/Content/codemirror.css" rel="stylesheet" />
+	<style>
+		li {
+			padding-left: 10px;
+		}
+	</style>
 }
 
 @section header
@@ -20,25 +23,48 @@
 			<ul>
 				<li ng-repeat="node in nodes" ng-include="'../templates/treeView.html'"></li>
 			</ul>
+
+			<button ng-click="test()">Press</button>
+			<div id="CodeMirror"></div>
 		</div>
 
 		<div class="col-md-8">
-			graph holder
+			<div id="graphContainer"></div>
 		</div>
 	</div>
 </div>
 
 @section scripts
 {
+	<script src="~/Scripts/codemirror.js"></script>
+	<script src="~/Scripts/vivagraph/vivagraph.min.js"></script>
 	<script>
 		'use strict';
+
+		var tEditor = CodeMirror(document.getElementById('CodeMirror'),
+			{
+				indentWithTabs: true,
+				lineNumbers: true
+			});
+
+		var graphics = Viva.Graph.View.svgGraphics();
+		graphics.node(function(node) {
+			return Viva.Graph.svg('text')
+				.text(node.data.value);
+		})
+			.placeNode(function(nodeUI, pos) {
+				nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
+			});
 
 		(function(ng) {
 			var app = ng.module('mindMapApp', []);
 
 			app.factory('nodeRepository', function() {
+				var count = 1;
+
 				var nodes = [
 					{
+						id: count,
 						value: 'root',
 						childs: []
 					}
@@ -49,10 +75,14 @@
 						return nodes;
 					},
 					add: function(node, val) {
+						count++;
+
 						if (!node.childs) {
 							node.childs = [];
 						}
+
 						var obj = {
+							id: count,
 							childs: [],
 							value: val
 						};
@@ -65,15 +95,111 @@
 			});
 
 			app.controller('mindMapCtrl', ['$scope', 'nodeRepository', function($scope, nodeRepo) {
-				$scope.nodes = nodeRepo.getAll();
+				var graph = Viva.Graph.graph();
+				$scope.htmlContent = '';
 
-				$scope.add = function(node) {
-					nodeRepo.add(node, 'some text...');
+				$scope.test = function() {
+					console.log('------------------------------------------------');
+					graph.clear();
+
+					var counter = 1;
+					var array = tEditor.getValue().split('\n');
+					var tempData = _.compact(_.map(array, function(el) {
+						if ($.trim(el)) {
+							counter++;
+							return {
+								value: el,
+								id: counter,
+								childs: [],
+								level: getLevel(el) + 1
+							};
+						}
+					}));
+
+					var data = [{
+						value: 'root',
+						id: 1,
+						parent: 0,
+						childs: [],
+					}];
+					_.each(tempData, function(e) {
+						data.push({
+							value: e.value,
+							id: e.id,
+							parent: searchParent(tempData, e),
+							childs: [],
+						});
+					});
+
+					var graphData = [];
+					_.each(data, function(e) {
+						if (e.parent == 0) {
+							graphData.push(e);
+						} else {
+							deepH(graphData, e);
+						}
+					});
+
+					$scope.make(graphData);
 				};
-				
-				$scope.del = function (node) {
-					nodeRepo.del(node);
+
+				var getLevel = function(obj) {
+					return obj.match(/^\s{0,9}/)[0].length;
 				};
+
+				$scope.make = function(data) {
+					var root = data[0];
+					deepEach(root);
+					Render();
+				};
+
+				var searchParent = function(data, newNode) {
+					var id = newNode.id - 2;
+					for (var i = id; i >= 0; i--) {
+						var elm = data[i];
+						if (elm.level < newNode.level) {
+							return elm.id;
+						}
+					}
+					return 1;
+				};
+
+				var deepH = function(array, node) {
+					_.each(array, function(e) {
+						if (e.id === node.parent) {
+							e.childs.push(node);
+							return;
+						} else {
+							if (e.childs.length) {
+								deepH(e.childs, node);
+							}
+						}
+					});
+				};
+
+				var deepEach = function(node) {
+					graph.addNode(node.id, { value: node.value });
+					_.each(node.childs, function(e) {
+						graph.addNode(e.id, { value: e.value });
+
+						graph.addLink(node.id, e.id);
+						if (e.childs.length) {
+							deepEach(e);
+						}
+					});
+				};
+
+				function Render() {
+					$('#placeHolder').remove();
+					$("#graphContainer").append("<div style='width: 100%; height: 400px; background-color: rgba(51,51,51,0.4);' id='placeHolder'></div>");
+
+					var renderer = Viva.Graph.View.renderer(graph, {
+						container: document.getElementById('placeHolder'),
+						graphics: graphics
+					});
+
+					renderer.run();
+				}
 			}]);
 
 		})(angular);
