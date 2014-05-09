@@ -5,9 +5,14 @@
 @section style
 {
 	<link href="~/Content/codemirror.css" rel="stylesheet" />
+	<link href="~/Content/mdn-like.css" rel="stylesheet" />
 	<style>
 		li {
 			padding-left: 10px;
+		}
+
+		.CodeMirror {
+			height: 600px;
 		}
 	</style>
 }
@@ -23,8 +28,7 @@
 			<ul>
 				<li ng-repeat="node in nodes" ng-include="'../templates/treeView.html'"></li>
 			</ul>
-
-			<button ng-click="test()">Press</button>
+			
 			<div id="CodeMirror"></div>
 		</div>
 
@@ -41,65 +45,29 @@
 	<script>
 		'use strict';
 
-		var tEditor = CodeMirror(document.getElementById('CodeMirror'),
-			{
+		(function (ng) {
+			
+			var tEditor = CodeMirror(document.getElementById('CodeMirror'), {
 				indentWithTabs: true,
-				lineNumbers: true
+				lineNumbers: true,
+				theme: 'mdn-like'
 			});
 
-		var graphics = Viva.Graph.View.svgGraphics();
-		graphics.node(function(node) {
-			return Viva.Graph.svg('text')
-				.text(node.data.value);
-		})
-			.placeNode(function(nodeUI, pos) {
-				nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
-			});
+			var graphics = Viva.Graph.View.svgGraphics();
+			graphics.node(function(node) {
+				return Viva.Graph.svg('text')
+					.text(node.data.value);
+			})
+				.placeNode(function(nodeUi, pos) {
+					nodeUi.attr('x', pos.x).attr('y', pos.y);
+				});
 
-		(function(ng) {
 			var app = ng.module('mindMapApp', []);
-
-			app.factory('nodeRepository', function() {
-				var count = 1;
-
-				var nodes = [
-					{
-						id: count,
-						value: 'root',
-						childs: []
-					}
-				];
-
-				return {
-					getAll: function() {
-						return nodes;
-					},
-					add: function(node, val) {
-						count++;
-
-						if (!node.childs) {
-							node.childs = [];
-						}
-
-						var obj = {
-							id: count,
-							childs: [],
-							value: val
-						};
-						node.childs.push(obj);
-					},
-					del: function(node) {
-						node.childs = [];
-					}
-				};
-			});
-
-			app.controller('mindMapCtrl', ['$scope', 'nodeRepository', function($scope, nodeRepo) {
+			app.controller('mindMapCtrl', ['$scope', function($scope) {
 				var graph = Viva.Graph.graph();
-				$scope.htmlContent = '';
+				var that = this;
 
-				$scope.test = function() {
-					console.log('------------------------------------------------');
+				that.start = function() {
 					graph.clear();
 
 					var counter = 1;
@@ -111,7 +79,7 @@
 								value: el,
 								id: counter,
 								childs: [],
-								level: getLevel(el) + 1
+								level: that.getOffset(el) + 1
 							};
 						}
 					}));
@@ -126,7 +94,7 @@
 						data.push({
 							value: e.value,
 							id: e.id,
-							parent: searchParent(tempData, e),
+							parent: that.searchParent(tempData, e),
 							childs: [],
 						});
 					});
@@ -136,24 +104,24 @@
 						if (e.parent == 0) {
 							graphData.push(e);
 						} else {
-							deepH(graphData, e);
+							that.createHierarchy(graphData, e);
 						}
 					});
 
-					$scope.make(graphData);
+					that.buildGraph(graphData);
 				};
 
-				var getLevel = function(obj) {
+				that.getOffset = function(obj) {
 					return obj.match(/^\s{0,9}/)[0].length;
 				};
 
-				$scope.make = function(data) {
+				that.buildGraph = function(data) {
 					var root = data[0];
-					deepEach(root);
-					Render();
+					that.addToGraph(root);
+					that.renderGraph();
 				};
 
-				var searchParent = function(data, newNode) {
+				that.searchParent = function(data, newNode) {
 					var id = newNode.id - 2;
 					for (var i = id; i >= 0; i--) {
 						var elm = data[i];
@@ -164,34 +132,33 @@
 					return 1;
 				};
 
-				var deepH = function(array, node) {
+				that.createHierarchy = function(array, node) {
 					_.each(array, function(e) {
 						if (e.id === node.parent) {
 							e.childs.push(node);
 							return;
 						} else {
 							if (e.childs.length) {
-								deepH(e.childs, node);
+								that.createHierarchy(e.childs, node);
 							}
 						}
 					});
 				};
 
-				var deepEach = function(node) {
+				that.addToGraph = function(node) {
 					graph.addNode(node.id, { value: node.value });
 					_.each(node.childs, function(e) {
 						graph.addNode(e.id, { value: e.value });
-
 						graph.addLink(node.id, e.id);
 						if (e.childs.length) {
-							deepEach(e);
+							that.addToGraph(e);
 						}
 					});
 				};
 
-				function Render() {
+				that.renderGraph = function() {
 					$('#placeHolder').remove();
-					$("#graphContainer").append("<div style='width: 100%; height: 400px; background-color: rgba(51,51,51,0.4);' id='placeHolder'></div>");
+					$("#graphContainer").append("<div style='width: 100%; height: 600px; background-color: rgba(51,51,51,0.4);' id='placeHolder'></div>");
 
 					var renderer = Viva.Graph.View.renderer(graph, {
 						container: document.getElementById('placeHolder'),
@@ -200,6 +167,9 @@
 
 					renderer.run();
 				}
+				
+				var filterThrottled = _.debounce(that.start, 2000);
+				tEditor.on('change', filterThrottled);
 			}]);
 
 		})(angular);
