@@ -17,7 +17,7 @@
 	</style>
 }
 
-<div ng-app="mindMapApp" ng-controller="mindMapCtrl">
+<div ng-app="app.mind-map" ng-controller="ctrl.mind-map">
 	<div class="row" style="font-size: 16px;">
 		<div class="col-md-4">
 			<div id="CodeMirror"></div>
@@ -35,24 +35,60 @@
 	<script>
 		'use strict';
 
-		;(function (ng) {
+		var DEFAULT_VALUE = "Winter\n\tDecember\n\tJanuary\n\tFebruary" +
+			"\nSpring\n\tMarch\n\tApril\n\tMay" +
+			"\nSummer\n\tJune\n\tJuly\n\tAugust" +
+			"\nAutumn\n\tSeptember\n\tOctober\n\tNovember";
+
+		var myValue = '';
+
+		; (function (ng) {
+			
+			var getColor = d3.scale.category20();
+
 			var tEditor = CodeMirror(document.getElementById('CodeMirror'), {
 				indentWithTabs: true,
 				lineNumbers: true,
-				theme: 'mdn-like'
+				theme: 'mdn-like',
+				value: DEFAULT_VALUE
 			});
 
+			var a = 1; // TODO delete
+
 			var graphics = Viva.Graph.View.svgGraphics();
-			graphics.node(function(node) {
-				return Viva.Graph.svg('text')
-					.text(node.data.value);
+			graphics.node(function (node) {
+				var group = Viva.Graph.svg('g');
+				
+				var text = Viva.Graph.svg('text')
+								.attr('x', '-5px')
+								.attr('y', '-13px')
+								.text(node.id - 1);
+				group.append(text);
+
+				var elm = Viva.Graph.svg('circle')
+					.attr('fill', getColor(node.data.parent))
+					.attr('r', 10);
+				group.append(elm);
+
+				return group;
 			})
-				.placeNode(function(nodeUi, pos) {
-					nodeUi.attr('x', pos.x).attr('y', pos.y);
+				.placeNode(function (nodeUi, pos) {
+					//if(a) {
+					//	myValue = nodeUi;
+					//	a = 0;
+					//	nodeUi.children[0].attr('x', pos.x).attr('y', pos.y);
+					//}
+					////nodeUi.attr('x', pos.x).attr('y', pos.y);
+					//nodeUi.attr('cx', pos.x).attr('cy', pos.y);
+					
+					nodeUi.attr('transform',
+						   'translate(' +
+								 (pos.x) + ',' + (pos.y) +
+						   ')');
 				});
 
-			var app = ng.module('mindMapApp', []);
-			app.controller('mindMapCtrl', ['$scope', function($scope) {
+			var app = ng.module('app.mind-map', []);
+			app.controller('ctrl.mind-map', ['$scope', function($scope) {
 				var graph = Viva.Graph.graph();
 				var that = this;
 
@@ -137,7 +173,7 @@
 				that.addToGraph = function(node) {
 					graph.addNode(node.id, { value: node.value });
 					_.each(node.childs, function(e) {
-						graph.addNode(e.id, { value: e.value });
+						graph.addNode(e.id, { value: e.value, parent: e.parent });
 						graph.addLink(node.id, e.id);
 						if (e.childs.length) {
 							that.addToGraph(e);
@@ -155,10 +191,13 @@
 					});
 
 					renderer.run();
-				}
+				};
 				
+				// call method after 2 second, when user end type
 				var filterThrottled = _.debounce(that.start, 2000);
 				tEditor.on('change', filterThrottled);
+
+				that.start();
 			}]);
 
 		})(angular);
