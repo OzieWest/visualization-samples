@@ -1,9 +1,9 @@
 ﻿@using System.Configuration
 @{
-	ViewBag.Title = "D3.js";
+	ViewBag.Title = "Rickshaw for Vkontakte Groups";
 }
 
-@section style{
+@section header{
 	<link href="~/Content/rickshaw.min.css" rel="stylesheet" />
 	<link href="~/Content/detail.css" rel="stylesheet" />
 	<link href="~/Content/graph.css" rel="stylesheet" />
@@ -33,7 +33,7 @@
 	</style>
 }
 
-<div id="ctrlzone" ng-controller="groupController" style="display: none;">
+<div ng-app="vis.module" ng-controller="groupController" ng-cloack class="ng-cloack">
 	
 	<div ng-show="g.search.length == 0">
 		<span class="text-danger" style="font-size: 16px;">?name=group_name</span>
@@ -184,8 +184,6 @@
 				results = regex.exec(location.search);
 			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 		}
-
-		$(document).ready(function () { $('#ctrlzone').show(); });
 
 		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		

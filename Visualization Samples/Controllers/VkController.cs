@@ -16,7 +16,7 @@ namespace Visualization_Samples.Controllers
 				ViewBag.ID = Request.QueryString["id"];
 			}
 
-			return View("Posts", "_SecondLayout");
+			return View("Posts");
 		}
 
 		public ActionResult Profiles()
@@ -26,22 +26,12 @@ namespace Visualization_Samples.Controllers
 				ViewBag.ID = Request.QueryString["id"];
 			}
 
-			return View("profiles", "_SecondLayout");
+			return View("profiles");
 		}
 
 		public ActionResult Groups()
 		{
-			return View("groups", "_SecondLayout");
-		}
-
-		public ActionResult Test()
-		{
-			if (!Request.QueryString["id"].IsEmpty())
-			{
-				ViewBag.ID = Request.QueryString["id"];
-			}
-
-			return View("test", "_SecondLayout");
+			return View("groups");
 		}
 	}
 }

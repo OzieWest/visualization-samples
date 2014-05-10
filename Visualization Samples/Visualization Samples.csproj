@@ -206,6 +206,7 @@
     <Content Include="Content\detail.css" />
     <Content Include="Content\graph.css" />
     <Content Include="Content\legend.css" />
+    <Content Include="Content\mdn-like.css" />
     <Content Include="Content\rickshaw.min.css" />
     <Content Include="Content\target.png" />
     <Content Include="jsApp\app.service.js" />
@@ -328,7 +329,6 @@
     <Content Include="Scripts\ui-bootstrap-tpls-0.10.0.min.js" />
     <Content Include="Scripts\underscore\underscore-min.js" />
     <Content Include="Scripts\vivagraph\vivagraph.min.js" />
-    <Content Include="templates\treeView.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -355,13 +355,11 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="Views\Shared\_SecondLayout.cshtml" />
     <Content Include="Views\Vk\Posts.cshtml" />
     <Content Include="Views\Home\LetterGraph.cshtml" />
     <Content Include="Views\Vk\Profiles.cshtml" />
     <Content Include="Views\Vk\Groups.cshtml" />
     <Content Include="Scripts\underscore\underscore-min.map" />
-    <Content Include="Views\Vk\GraphTest.cshtml" />
     <Content Include="Views\Home\MindMap.cshtml" />
   </ItemGroup>
   <ItemGroup>

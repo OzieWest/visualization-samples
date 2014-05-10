@@ -1,8 +1,8 @@
 ﻿@{
-	ViewBag.Title = "D3.js";
+	ViewBag.Title = "VivaGraph for MindMap";
 }
 
-@section style
+@section header
 {
 	<link href="~/Content/codemirror.css" rel="stylesheet" />
 	<link href="~/Content/mdn-like.css" rel="stylesheet" />
@@ -17,21 +17,11 @@
 	</style>
 }
 
-@section header
-{
-	<h2 class="page-title">Data-Driven Documents<small> is a JavaScript library for manipulating documents based on data.</small></h2>
-}
-
 <div ng-app="mindMapApp" ng-controller="mindMapCtrl">
 	<div class="row" style="font-size: 16px;">
 		<div class="col-md-4">
-			<ul>
-				<li ng-repeat="node in nodes" ng-include="'../templates/treeView.html'"></li>
-			</ul>
-			
 			<div id="CodeMirror"></div>
 		</div>
-
 		<div class="col-md-8">
 			<div id="graphContainer"></div>
 		</div>
@@ -45,8 +35,7 @@
 	<script>
 		'use strict';
 
-		(function (ng) {
-			
+		;(function (ng) {
 			var tEditor = CodeMirror(document.getElementById('CodeMirror'), {
 				indentWithTabs: true,
 				lineNumbers: true,
