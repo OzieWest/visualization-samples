@@ -12,7 +12,7 @@
 		}
 
 		.CodeMirror {
-			height: 600px;
+			height: 580px;
 		}
 	</style>
 }
@@ -20,6 +20,22 @@
 <div ng-app="app.mind-map" ng-controller="ctrl.mind-map">
 	<div class="row" style="font-size: 16px;">
 		<div class="col-md-4">
+			<table class="table table-bordered table-striped">
+				<tr>
+					<td>Label:</td>
+					<td>
+						<select ng-change="start()" ng-model="currentNodeName" ng-options="o.value as o.name for o in nodeNames">
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Color:</td>
+					<td>
+						<select ng-change="start()" ng-model="currentNodeColor" ng-options="o.value as o.name for o in nodeColors">
+						</select>
+					</td>
+				</tr>
+			</table>
 			<div id="CodeMirror"></div>
 		</div>
 		<div class="col-md-8">
@@ -40,11 +56,7 @@
 			"\nSummer\n\tJune\n\tJuly\n\tAugust" +
 			"\nAutumn\n\tSeptember\n\tOctober\n\tNovember";
 
-		var myValue = '';
-
-		; (function (ng) {
-			
-			var getColor = d3.scale.category20();
+		(function (ng) {
 
 			var tEditor = CodeMirror(document.getElementById('CodeMirror'), {
 				indentWithTabs: true,
@@ -52,52 +64,60 @@
 				theme: 'mdn-like',
 				value: DEFAULT_VALUE
 			});
-
-			var a = 1; // TODO delete
-
+			var graph = Viva.Graph.graph();
 			var graphics = Viva.Graph.View.svgGraphics();
-			graphics.node(function (node) {
-				var group = Viva.Graph.svg('g');
-				
-				var text = Viva.Graph.svg('text')
-								.attr('x', '-5px')
-								.attr('y', '-13px')
-								.text(node.id - 1);
-				group.append(text);
+			var getColor = d3.scale.category20();
 
-				var elm = Viva.Graph.svg('circle')
-					.attr('fill', getColor(node.data.parent))
-					.attr('r', 10);
-				group.append(elm);
-
-				return group;
-			})
-				.placeNode(function (nodeUi, pos) {
-					//if(a) {
-					//	myValue = nodeUi;
-					//	a = 0;
-					//	nodeUi.children[0].attr('x', pos.x).attr('y', pos.y);
-					//}
-					////nodeUi.attr('x', pos.x).attr('y', pos.y);
-					//nodeUi.attr('cx', pos.x).attr('cy', pos.y);
-					
-					nodeUi.attr('transform',
-						   'translate(' +
-								 (pos.x) + ',' + (pos.y) +
-						   ')');
-				});
-
-			var app = ng.module('app.mind-map', []);
-			app.controller('ctrl.mind-map', ['$scope', function($scope) {
-				var graph = Viva.Graph.graph();
+			var app = ng.module('app.mind-map', ['ui.bootstrap']);
+			app.controller('ctrl.mind-map', ['$scope', function ($scope) {
 				var that = this;
 
-				that.start = function() {
+				// OPTIONS ---------------------------------------
+				$scope.currentNodeName = 'value';
+				$scope.nodeNames = [
+					{ value: 'number', name: 'string number' },
+					{ value: 'value', name: 'value of node' },
+				];
+				
+				$scope.currentNodeColor = 'parent';
+				$scope.nodeColors = [
+					{ value: 'parent', name: 'by parent' },
+					{ value: 'level', name: 'by level' },
+				];
+
+				// GRAPH config ---------------------------------------
+				that.configGraphics = function (name, color) {
+					graphics.node(function (node) {
+						var group = Viva.Graph.svg('g');
+
+						var text = Viva.Graph.svg('text')
+							.attr('x', '-5px')
+							.attr('y', '-13px')
+							.text(node.data[name]);
+
+						group.append(text);
+
+						var elm = Viva.Graph.svg('circle')
+							.attr('fill', getColor(node.data[color]))
+							.attr('r', 10);
+
+						group.append(elm);
+
+						return group;
+					})
+						.placeNode(function (nodeUi, pos) {
+							nodeUi.attr('transform', 'translate(' + pos.x + ',' + pos.y + ')');
+						});
+				};
+
+				// GRAPH -----------------------------------------
+				$scope.start = function () {
+					that.configGraphics($scope.currentNodeName, $scope.currentNodeColor);
 					graph.clear();
 
 					var counter = 1;
 					var array = tEditor.getValue().split('\n');
-					var tempData = _.compact(_.map(array, function(el) {
+					var tempData = _.compact(_.map(array, function (el) {
 						if ($.trim(el)) {
 							counter++;
 							return {
@@ -115,17 +135,18 @@
 						parent: 0,
 						childs: [],
 					}];
-					_.each(tempData, function(e) {
+					_.each(tempData, function (e) {
 						data.push({
 							value: e.value,
 							id: e.id,
+							level: e.level,
 							parent: that.searchParent(tempData, e),
 							childs: [],
 						});
 					});
 
 					var graphData = [];
-					_.each(data, function(e) {
+					_.each(data, function (e) {
 						if (e.parent == 0) {
 							graphData.push(e);
 						} else {
@@ -136,17 +157,17 @@
 					that.buildGraph(graphData);
 				};
 
-				that.getOffset = function(obj) {
+				that.getOffset = function (obj) {
 					return obj.match(/^\s{0,9}/)[0].length;
 				};
 
-				that.buildGraph = function(data) {
+				that.buildGraph = function (data) {
 					var root = data[0];
 					that.addToGraph(root);
 					that.renderGraph();
 				};
 
-				that.searchParent = function(data, newNode) {
+				that.searchParent = function (data, newNode) {
 					var id = newNode.id - 2;
 					for (var i = id; i >= 0; i--) {
 						var elm = data[i];
@@ -157,8 +178,8 @@
 					return 1;
 				};
 
-				that.createHierarchy = function(array, node) {
-					_.each(array, function(e) {
+				that.createHierarchy = function (array, node) {
+					_.each(array, function (e) {
 						if (e.id === node.parent) {
 							e.childs.push(node);
 							return;
@@ -170,10 +191,10 @@
 					});
 				};
 
-				that.addToGraph = function(node) {
-					graph.addNode(node.id, { value: node.value });
-					_.each(node.childs, function(e) {
-						graph.addNode(e.id, { value: e.value, parent: e.parent });
+				that.addToGraph = function (node) {
+					graph.addNode(node.id, { value: node.value, parent: node.parent, level: node.level, number: node.id - 1 });
+					_.each(node.childs, function (e) {
+						graph.addNode(e.id, { value: e.value, parent: e.parent, level: e.level, number: e.id - 1 });
 						graph.addLink(node.id, e.id);
 						if (e.childs.length) {
 							that.addToGraph(e);
@@ -181,9 +202,9 @@
 					});
 				};
 
-				that.renderGraph = function() {
+				that.renderGraph = function () {
 					$('#placeHolder').remove();
-					$("#graphContainer").append("<div style='width: 100%; height: 600px; background-color: rgba(51,51,51,0.4);' id='placeHolder'></div>");
+					$("#graphContainer").append("<div style='width: 100%; height: 680px; background-color: rgba(51,51,51,0.4);' id='placeHolder'></div>");
 
 					var renderer = Viva.Graph.View.renderer(graph, {
 						container: document.getElementById('placeHolder'),
@@ -192,12 +213,12 @@
 
 					renderer.run();
 				};
-				
+
 				// call method after 2 second, when user end type
-				var filterThrottled = _.debounce(that.start, 2000);
+				var filterThrottled = _.debounce($scope.start, 2000);
 				tEditor.on('change', filterThrottled);
 
-				that.start();
+				$scope.start();
 			}]);
 
 		})(angular);
