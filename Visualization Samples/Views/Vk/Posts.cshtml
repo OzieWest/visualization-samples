@@ -105,7 +105,6 @@
 	<script type="text/javascript">
 		'use sctrict';
 
-		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('vk_id', '@Html.Raw(ViewBag.ID)');
 
 		mainModule.controller('treeController', function($scope, $timeout, $log, vkService, vk_id) {

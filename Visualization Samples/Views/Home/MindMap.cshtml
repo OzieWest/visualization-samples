@@ -20,22 +20,6 @@
 <div ng-app="app.mind-map" ng-controller="ctrl.mind-map">
 	<div class="row" style="font-size: 16px;">
 		<div class="col-md-4">
-			<table class="table table-bordered table-striped">
-				<tr>
-					<td>Label:</td>
-					<td>
-						<select ng-change="start()" ng-model="currentNodeName" ng-options="o.value as o.name for o in nodeNames">
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td>Color:</td>
-					<td>
-						<select ng-change="start()" ng-model="currentNodeColor" ng-options="o.value as o.name for o in nodeColors">
-						</select>
-					</td>
-				</tr>
-			</table>
 			<div id="CodeMirror"></div>
 		</div>
 		<div class="col-md-8">

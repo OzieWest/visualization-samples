@@ -185,8 +185,6 @@
 			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 		}
 
-		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
-		
 		mainModule.controller('groupController', function ($scope, $log, vkService) {
 			$scope.g = {
 				search: getParameterByName('name'),

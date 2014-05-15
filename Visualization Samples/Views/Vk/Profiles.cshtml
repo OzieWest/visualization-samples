@@ -96,10 +96,9 @@
 			}
 		});
 
-		var token = '@Html.Raw(ConfigurationManager.AppSettings["vkToken"])';
 		mainModule.value('ownerid', owid);
 
-		mainModule.factory('sharedRepo', function(mockService) {
+		mainModule.factory('sharedRepo', function() {
 			var repo = {
 				data: [],
 				friends: []
