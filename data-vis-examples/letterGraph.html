@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>D3, VivaGraph, Rickshaw</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="styles/mainstyle.css" rel="stylesheet" />
+    <style>
+        .nav, .pagination, .carousel, .panel-title a {
+            cursor: pointer;
+        }
+    </style>
+    <!-- jquery -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <!-- angular -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-sanitize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+    <!-- other -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul style="font-size: 16px;" class="breadcrumb">
+                    <li><a href='index.html'>Letter Tree</a></li>
+                    <li><a href='lettergraph.html'>Letter Graph</a></li>
+                    <li><a href='mindMap.html'>MindMap</a></li>
+                    <li><a href='posts.html'>Vk post</a></li>
+                    <li><a href='profiles.html'>Vk profile</a></li>
+                    <li><a href='groups.html'>Vk Group</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <section class="widget">
+
+                    <div ng-controller="pageController as ctrl">
+                        <textarea style="width: 100%;" rows="3"
+                                  ng-change="ctrl.message.split()"
+                                  ng-model="ctrl.message.source"
+                                  placeholder="example: help me hennry with haskel"></textarea>
+                        <svg />
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="app/core.js"></script>
+    <script type="text/javascript">
+        (function (G, angular, d3, _) {
+            'use strict';
+
+            function pageController() {
+                var ctrl = this,
+                    root = {},
+                    currentNode = {};
+
+                ctrl.message = {
+                    source: 'JavaScript, and JavaScript development has come a long way since the early days. Time and circumstance have been kind to the platform, and recent changes, specifically the addition of such modern frameworks as Knockout, Backbone, and AngularJS have really raised the bar, ushering in an era of maturity and sophistication that we�ve simply never seen before now.',
+                    words: [],
+                    split: function splitSource() {
+                        this.words =
+                            this.source
+                                .toLowerCase()
+                                .replace(/[^A-Za-z�-��-��\s]+/g, "")
+                                .replace(/\s+/, " ")
+                                .split(' ');
+
+                        rebuildTree();
+                        update(root);
+                    }
+                };
+                
+                 function rebuildTree () {
+                    root = createNode('root');
+                    if (ctrl.message.source) {
+                        _.each(ctrl.message.words, function (word) {
+                            _.each(word, function (letter, index) {
+                                if (index == 0)
+                                    currentNode = root;
+
+                                checkNode(letter);
+                            });
+                        });
+                    }
+                };
+
+                 function checkNode (letter) {
+                    _.each(currentNode.children, function (node) {
+                        if (letter == node.name) {
+                            node.value += 1;
+                            currentNode = node;
+                            return;
+                        }
+                    });
+
+                    var newNode = createNode(letter);
+                    currentNode.children.push(newNode);
+                    currentNode = newNode;
+                };
+
+                 function createNode (name) {
+                    var node = {
+                        name: name,
+                        value: 1,
+                        type: 'black',
+                        level: 'red',
+                        children: []
+                    };
+                    return node;
+                };
+
+                var width = 960,
+                    height = 600;
+
+                var force = d3
+                    .layout
+                    .force()
+                    .size([width, height])
+                    .on("tick", tick);
+
+
+                var svg = d3
+                    .select("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                var link = svg.selectAll(".link"),
+                    node = svg.selectAll(".node");
+
+                function update(root) {
+                    var nodes = flatten(root),
+                        links = d3.layout.tree().links(nodes);
+
+                    // Restart the force layout.
+                    force
+                        .nodes(nodes)
+                        .links(links)
+                        .start();
+
+                    // Update the links�
+                    link =
+                        link
+                            .data(links, function (d) { return d.target.id; });
+
+                    // Exit any old links.
+                    link
+                        .exit()
+                        .remove();
+
+                    // Enter any new links.
+                    link
+                        .enter()
+                        .insert("line", ".node")
+                        .attr("class", "link")
+                        .attr("x1", function (d) { return d.source.x; })
+                        .attr("y1", function (d) { return d.source.y; })
+                        .attr("x2", function (d) { return d.target.x; })
+                        .attr("y2", function (d) { return d.target.y; });
+
+                    // Update the nodes�
+                    node =
+                        node
+                            .data(nodes, function (d) { return d.id; })
+                            .style("fill", color);
+
+                    // Exit any old nodes.
+                    node
+                        .exit()
+                        .remove();
+
+                    // Enter any new nodes.
+                    node
+                        .enter()
+                        .append("circle")
+                        .attr("class", "node")
+                        .attr("cx", function (d) { return d.x; })
+                        .attr("cy", function (d) { return d.y; })
+                        .attr("r", function (d) { return Math.sqrt(d.value) * 4.5; })
+                        .style("fill", color)
+                        .on("click", click)
+                        .call(force.drag);
+                }
+
+                function tick() {
+                    link.attr("x1", function (d) { return d.source.x; })
+                        .attr("y1", function (d) { return d.source.y; })
+                        .attr("x2", function (d) { return d.target.x; })
+                        .attr("y2", function (d) { return d.target.y; });
+
+                    node.attr("cx", function (d) { return d.x; })
+                        .attr("cy", function (d) { return d.y; });
+                }
+
+                function color(d) {
+                    return d.children.length > 0 ? '#A5E1F3' : "#fd8d3c";
+                }
+
+                function click(d) {
+                    if (!d3.event.defaultPrevented) {
+                        if (d.children) {
+                            d._children = d.children;
+                            d.children = null;
+                        } else {
+                            d.children = d._children;
+                            d._children = null;
+                        }
+                        update();
+                    }
+                }
+
+                function flatten(root) {
+                    var nodes = [], i = 0;
+
+                    function recurse(node) {
+                        if (node.children) node.children.forEach(recurse);
+                        if (!node.id) node.id = ++i;
+                        nodes.push(node);
+                    }
+
+                    recurse(root);
+                    return nodes;
+                }
+
+                // INIT ----------------------------------
+                ctrl.message.split();
+            };
+
+            angular
+                .module('core')
+                .controller('pageController', pageController);
+
+            angular
+                .bootstrap(document, ['core']);
+
+        })(this, angular, d3, _);
+    </script>
+</body>
+</html>
