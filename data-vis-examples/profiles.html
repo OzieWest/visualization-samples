@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>D3, VivaGraph, Rickshaw</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="styles/mainstyle.css" rel="stylesheet" />
+    <style>
+        .nav, .pagination, .carousel, .panel-title a {
+            cursor: pointer;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <!-- jquery -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <!-- angular -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-sanitize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+    <!-- other -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+
+    <style>
+        svg {
+            border: 1px solid rgb(160, 160, 160);
+            width: 100%;
+            height: 100%;
+        }
+
+        #vivaContainer {
+            margin-top: 10px;
+            width: 100%;
+            height: 650px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul style="font-size: 16px;" class="breadcrumb">
+                    <li><a href='index.html'>Letter Tree</a></li>
+                    <li><a href='lettergraph.html'>Letter Graph</a></li>
+                    <li><a href='mindMap.html'>MindMap</a></li>
+                    <li><a href='posts.html'>Vk post</a></li>
+                    <li><a href='profiles.html'>Vk profile</a></li>
+                    <li><a href='groups.html'>Vk Group</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <section class="widget">
+
+                    <div ng-controller="pageController as ctrl" ng-cloak class="ng-cloak">
+
+                        <div class="text-danger" ng-if="ctrl.ownerid.length == 0" style="font-size: 16px;">
+                            ?id=person_id
+                        </div>
+
+                        <div ng-if="ctrl.ownerid.length != 0">
+                            <progressbar ng-show="ctrl.lock && ctrl.calcWith() != 100" class="progress-striped active" value="ctrl.calcWith()" type="info">loading...</progressbar>
+                            <button ng-show="!ctrl.lock && ctrl.calcWith() != 100" class="btn btn-info" ng-click="ctrl.loadData()">Load full data</button>
+
+                            <table ng-show="!ctrl.created && ctrl.calcWith() == 100" style="margin-top: 10px;" class="table table-striped table-bordered">
+                                <tr>
+                                    <td>
+                                        <button class="btn btn-info" ng-click="ctrl.createGraph()">Create graph</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id="vivaContainer"></div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="scripts/vivagraph.min.js"></script>
+
+    <script src="app/core.js"></script>
+    <script src="app/vk.service.js"></script>
+    <script src="app/vk.profile.js"></script>
+
+</body>
+</html>

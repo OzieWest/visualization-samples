@@ -47,7 +47,7 @@
 							args.detail.sort(function (a, b) { return a.order - b.order; }).forEach(function (d) {
 								var block = document.createElement('div');
 
-								var label = document.createElement('span');
+								var label = document.createElement('div');
 								label.className = 'label';
 								label.innerHTML = d.name + ": " + d.value.y;
 								label.style.backgroundColor = d.series.color;
@@ -88,7 +88,7 @@
 	};
 
 	angular
-		.module('main')
+		.module('core')
 		.directive('myChart', myChart);
 
 })(this, angular);

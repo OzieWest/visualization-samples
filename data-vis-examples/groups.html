@@ -1,0 +1,344 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>D3, VivaGraph, Rickshaw</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="styles/mainstyle.css" rel="stylesheet" />
+    <style>
+        .nav, .pagination, .carousel, .panel-title a {
+            cursor: pointer;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <!-- jquery -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <!-- angular -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-sanitize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+    <!-- other -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+
+    <link href="styles/rickshaw.min.css" rel="stylesheet" />
+    <link href="styles/detail.css" rel="stylesheet" />
+    <link href="styles/graph.css" rel="stylesheet" />
+    <link href="styles/legend.css" rel="stylesheet" />
+    <style>
+        select {
+            width: 100%;
+            height: 28px;
+            font-size: 16px;
+        }
+
+        .infoBlock span {
+            font-size: 14px !important;
+        }
+
+        #legend {
+            margin-top: 10px;
+        }
+
+            #legend span {
+                font-size: 14px;
+            }
+
+        .col1 {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul style="font-size: 16px;" class="breadcrumb">
+                    <li><a href='index.html'>Letter Tree</a></li>
+                    <li><a href='lettergraph.html'>Letter Graph</a></li>
+                    <li><a href='mindMap.html'>MindMap</a></li>
+                    <li><a href='posts.html'>Vk post</a></li>
+                    <li><a href='profiles.html'>Vk profile</a></li>
+                    <li><a href='groups.html'>Vk Group</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <section class="widget">
+
+                    <div ng-controller="pageController as ctrl" ng-cloack class="ng-cloack">
+
+                        <div ng-show="ctrl.g.search.length == 0">
+                            <span class="text-danger" style="font-size: 16px;">?name=group_name</span>
+                        </div>
+
+                        <div ng-show="ctrl.g.current.gid != 0">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <a href="{{ctrl.g.current.photo_big}}" class="thumbnail" target="_blank">
+                                        <img ng-src="{{ctrl.g.current.photo_medium}}">
+                                    </a>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"
+                                                   ng-model="ctrl.graph.showLikes"
+                                                   ng-change="ctrl.allInOneGraph()">
+                                            <span class="label" style="background: orange">Likes</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"
+                                                   ng-model="ctrl.graph.showComments"
+                                                   ng-change="ctrl.allInOneGraph()">
+                                            <span class="label" style="background: #4ab0ce">Comments</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"
+                                                   ng-model="ctrl.graph.showReposts"
+                                                   ng-change="ctrl.allInOneGraph()">
+                                            <span class="label" style="background: #91DF97">Reposts</span>
+                                        </label>
+                                    </div>
+
+                                    <select ng-options="renderer for renderer in ctrl.graph.renderers" ng-model="ctrl.graph.renderer"></select>
+                                </div>
+
+                                <div class="col-sm-10">
+                                    <table class="table table-striped table-bordered">
+                                        <tr>
+                                            <td class="col1">Id</td>
+                                            <td class="col2">{{ ctrl.g.current.gid }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col1">Name</td>
+                                            <td class="col2">{{ ctrl.g.current.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col1">Screen name</td>
+                                            <td class="col2">{{ ctrl.g.current.screen_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col1">Is closed</td>
+                                            <td class="col2">{{ ctrl.g.current.is_closed == 1 ? 'true': false }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col1">Type</td>
+                                            <td class="col2">{{ ctrl.g.current.type }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col1">Description</td>
+                                            <td class="col2" ng-bind-html="ctrl.g.current.description"></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <h3 style="color: rgb(172, 172, 172);">Last 100 posts</h3>
+
+                            <div my-chart
+                                 data="ctrl.graph.data"
+                                 color="ctrl.graph.color"
+                                 renderer="ctrl.graph.renderer"
+                                 w="ctrl.graph.w()"
+                                 h="ctrl.graph.h()">
+                            </div>
+
+                            <hr />
+
+                            <h3 style="color: rgb(179, 173, 173);">Best {{ ctrl.best.count }} by</h3>
+                            <tabset>
+                                <tab heading="Likes">
+                                    <div style="margin-top: 10px;">
+                                        <table class="table table-striped table-colored table-bordered">
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>Count</td>
+                                                <td>URL</td>
+                                            </tr>
+                                            <tr ng-repeat="p in ctrl.best.likes track by $index">
+                                                <td>{{ p.id }}</td>
+                                                <td>{{ p.likes.count }}</td>
+                                                <td ng-bind-html="ctrl.getUrl(p.url)"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </tab>
+                                <tab heading="Comments">
+                                    <div style="margin-top: 10px;">
+                                        <table class="table table-striped table-colored table-bordered">
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>Count</td>
+                                                <td>URL</td>
+                                            </tr>
+                                            <tr ng-repeat="p in ctrl.best.comments track by $index">
+                                                <td>{{ p.id }}</td>
+                                                <td>{{ p.comments.count }}</td>
+                                                <td ng-bind-html="ctrl.getUrl(p.url)"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </tab>
+                                <tab heading="Reposts">
+                                    <div style="margin-top: 10px;">
+                                        <table class="table table-striped table-colored table-bordered">
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>Count</td>
+                                                <td>URL</td>
+                                            </tr>
+                                            <tr ng-repeat="p in ctrl.best.reposts track by $index">
+                                                <td>{{ p.id }}</td>
+                                                <td>{{ p.reposts.count }}</td>
+                                                <td ng-bind-html="ctrl.getUrl(p.url)"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </tab>
+                            </tabset>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="scripts/rickshaw.js"></script>
+
+    <script src="app/core.js"></script>
+    <script src="app/vk.service.js"></script>
+    <script src="app/vk.directive.js"></script>
+
+    <script type="text/javascript">
+        (function (G, angular, d3, _) {
+            'use strict';
+
+            function getParameterByName(name) {
+                name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            };
+
+            function pageController(vkService) {
+                var ctrl = this;
+
+                ctrl.g = {
+                    search: getParameterByName('name'),
+                    current: { gid: 0 },
+                    data: {}
+                };
+
+                ctrl.best = {
+                    likes: [],
+                    reposts: [],
+                    comments: [],
+                    count: 10
+                };
+
+                ctrl.graph = {
+                    ignore: 0,
+                    showLikes: true,
+                    showComments: true,
+                    showReposts: true,
+                    renderers: ['line', 'bar', 'scatterplot', 'area'],
+                    renderer: 'line',
+                    data: [{ data: [{ x: 0, y: 0 }], color: 'blue' }],
+                    w: function () {
+                        return $('#ctrlzone').parent().width();
+                    },
+                    h: function () { return 500; }
+                };
+
+                function loadData(name) {
+                    return vkService.groupWallGet(name).then(function (r) {
+                        var d = _.filter(r, function (e) { if (!_.isEmpty(e)) return e; });
+                        ctrl.g.data = angular.copy(d);
+                    });
+                };
+
+                ctrl.allInOneGraph = function () {
+                    ctrl.graph.data = [];
+
+                    var ignore = ctrl.graph.ignore,
+                        lastCount = ctrl.best.count;
+
+                    if (ctrl.graph.showLikes) mapData('likes', "orange");
+                    if (ctrl.graph.showComments) mapData('comments', "#4ab0ce");
+                    if (ctrl.graph.showReposts) mapData('reposts', "#91DF97");
+
+                    function mapData(type, color) {
+                        var name = ctrl.g.search;
+                        var d = _.compact(_.map(ctrl.g.data, function (e, i) {
+                            if (typeof ignore != 'undefined' && ignore != null && ignore != 0) {
+                                if (e[type].count < ignore)
+                                    return null;
+                            }
+                            var r = {
+                                x: i,
+                                y: e[type].count,
+                                url: 'http://vk.com/' + name + '?w=wall-' + ctrl.g.current.gid + '_' + e.id,
+                                text: e.text,
+                                date: e.date,
+                                id: e.id
+                            };
+                            r[type] = e[type];
+                            return r;
+                        }));
+
+                        ctrl.best[type] = getLast(d, type, lastCount); // BEST
+                        ctrl.graph.data.push({ color: color, data: d, name: type }); // GRAPH
+                    }
+                };
+
+                ctrl.getUrl = function (url) {
+                    return "<a href='" + url + "' target='_blank'>" + url + "</a>";
+                };
+
+                function getLast(data, type, count) {
+                    var m = _.sortBy(data, function (e) { return -e[type].count; });
+                    var r = [];
+                    for (var i = 0; i < count; i++) {
+                        r.push(m[i]);
+                    }
+                    return r;
+                };
+
+                // INIT -------------------------------------------------------------------------
+                var s = ctrl.g.search;
+                if (s.length != 0) {
+                    vkService.groupGet(s).then(function (r) {
+                        if (typeof r != 'undefined' && r.length != 0) {
+                            ctrl.g.current = angular.copy(r[0]);
+                        }
+                        loadData(ctrl.g.search).then(function () { ctrl.allInOneGraph(); });
+                    });
+                }
+            };
+
+            angular
+                .module('core')
+                .controller('pageController', pageController);
+
+            // INIT
+            angular
+                .bootstrap(document, ['core']);
+
+        })(this, angular, d3, _);
+    </script>
+</body>
+</html>

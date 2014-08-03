@@ -57,17 +57,17 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="app\app.module.js" />
+    <Content Include="app\vk.directive.js" />
     <Content Include="app\core.js" />
-    <Content Include="app\svg.vk.posts.js" />
-    <Content Include="app\svg.vk.profile.js" />
+    <Content Include="app\vk.posts.js" />
+    <Content Include="app\vk.profile.js" />
     <Content Include="app\vk.service.js" />
+    <Content Include="profiles.html" />
+    <Content Include="posts.html" />
+    <Content Include="groups.html" />
     <Content Include="mindMap.html" />
     <Content Include="index.html" />
     <Content Include="letterGraph.html" />
-    <Content Include="scripts\angularjs\angular-mocks.js" />
-    <Content Include="scripts\angularjs\angular-sanitize.min.js" />
-    <Content Include="scripts\angularjs\angular.min.js" />
     <Content Include="scripts\angularjs\angular.rangeSlider.js" />
     <Content Include="scripts\angularjs\vkontakteProvider-0.1.js" />
     <Content Include="scripts\angularjs\vkontakteSupport-0.1.js" />
@@ -92,8 +92,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="scripts\angularjs\angular-sanitize.min.js.map" />
-    <Content Include="scripts\angularjs\angular.min.js.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
