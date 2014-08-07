@@ -1,11 +1,7 @@
-(function (G, angular) {
-	'use strict';
-
-	angular
-		.module('core',
-		[
-			'ngSanitize',
-			'ui.bootstrap',
-		]);
-
-})(this, angular);
+﻿(function (angular) {
+    angular.module('core', [
+        'ngSanitize',
+        'ui.bootstrap'
+    ]);
+})(angular);
+//# sourceMappingURL=core.js.map

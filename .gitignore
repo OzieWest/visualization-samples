@@ -15,3 +15,12 @@ Visualization Samples/Web.config
 /data-vis-examples/Web.Release.config
 /data-vis-examples/data-vis-examples.csproj
 /data-vis-examples/data-vis-examples.csproj.user
+/data-vis-examples/bin
+/data-vis-examples/obj
+/data-vis-examples/Properties
+/data-vis-examples/data-vis-examples.csproj
+/data-vis-examples/data-vis-examples.csproj.user
+/data-vis-examples/packages.config
+/data-vis-examples/Web.config
+/data-vis-examples/Web.Debug.config
+/data-vis-examples/Web.Release.config

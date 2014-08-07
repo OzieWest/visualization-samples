@@ -44,14 +44,9 @@
 
                     <div ng-controller="treeController as ctrl">
                         <textarea style="width: 100%;" cols="3" rows=""
-                                  ng-change="ctrl.message.split()"
+                                  ng-change="ctrl.splitMessage()"
                                   ng-model="ctrl.message.source"
                                   placeholder="example: help me hennry with haskel"></textarea>
-
-                        <div class="alert alert-info">
-                            <span class="label label-info">Length: {{ ctrl.message.words.length }}</span>
-                            <span style="margin-left: 5px;" class="label" ng-repeat="word in ctrl.message.words track by $index">{{ word }}</span>
-                        </div>
 
                         <div class="svg"></div>
                     </div>
@@ -62,154 +57,21 @@
     </div>
 
     <script src="app/core.js"></script>
+    <script src="app/index.js"></script>
 
-    <script type="text/javascript">
-
-        (function (G, angular, d3, _) {
+    <script>
+        (function (angular, ctrl) {
             'use strict';
-
-            function treeController() {
-                var ctrl = this,
-                    root = {},
-                    currentNode = {};
-
-                ctrl.message = {
-                    source: 'Data Driven Documents is a JavaScript library for manipulating documents based on data',
-                    words: [],
-                    split: function splitSource() {
-                        this.words =
-                            this.source
-                                .toLowerCase()
-                                .replace(/[^A-Za-zА-Яа-яё\s]+/g, "")
-                                .replace(/\s+/, " ")
-                                .split(' ');
-
-                        rebuildTree();
-                        svgTree(root);
-                    }
-                };
-
-                function rebuildTree() {
-                    root = createNode('root');
-                    if (ctrl.message.source) {
-                        _.each(ctrl.message.words, function (word) {
-                            _.each(word, function (letter, index) {
-                                if (index == 0)
-                                    currentNode = root;
-                                checkNode(letter);
-                            });
-                        });
-                    }
-                };
-
-                function checkNode(letter) {
-                    _.each(currentNode.children, function (node) {
-                        if (letter == node.name) {
-                            node.value += 1;
-                            currentNode = node;
-                            return;
-                        }
-                    });
-
-                    var newNode = createNode(letter);
-                    currentNode.children.push(newNode);
-                    currentNode = newNode;
-                };
-
-                function createNode(name) {
-                    var node = {
-                        name: name,
-                        value: 1,
-                        type: 'black',
-                        level: 'red',
-                        children: []
-                    };
-                    return node;
-                };
-
-                // SVG -----------------------------
-                var margin, width, height, tree, diagonal, svg;
-
-                margin = { top: 20, right: 120, bottom: 20, left: 120 },
-                width = 900 - margin.right - margin.left,
-                height = 600 - margin.top - margin.bottom;
-
-                function nodeSize(param) { return param * 4; };
-
-                function svgTree(root) {
-                    d3.select("svg").remove();
-
-                    tree = d3.layout.tree().size([height, width]);
-
-                    svg = d3
-                        .selectAll("div.svg")
-                        .append("svg")
-                        .attr("style", "width: 100%; height: 600px;")
-                        .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-                    diagonal = d3
-                        .svg
-                        .diagonal()
-                        .projection(function (d) { return [d.y, d.x]; });
-
-                    var i = 0,
-                        nodes = tree.nodes(root).reverse(),
-                        links = tree.links(nodes);
-
-                    nodes.forEach(function (d) {
-                        d.y = d.depth * 60;
-                    });
-
-                    var node = svg
-                                .selectAll("g.node")
-                                .data(nodes, function (d) { return d.id || (d.id = ++i); });
-
-                    var nodeEnter = node
-                                    .enter()
-                                    .append("g")
-                                    .attr("class", "node")
-                                    .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
-
-                    nodeEnter
-                        .append("circle")
-                        .attr("r", function (d) {
-                            return nodeSize(d.value);
-                        })
-                        .style("fill", "#fff");
-
-                    nodeEnter
-                        .append("text")
-                        .attr("y", function (d) { return -1 * (nodeSize(d.value) + 10); })
-                        .attr("dy", ".40em")
-                        .attr("text-anchor", function (d) { return d.children || d._children ? "end" : "start"; })
-                        .text(function (d) { return d.name.toUpperCase(); })
-                        .style("fill-opacity", 1);
-
-                    var link = svg
-                        .selectAll("path.link")
-                        .data(links, function (d) { return d.target.id; });
-
-                    link
-                        .enter()
-                        .insert("path", "g")
-                        .attr("class", "link")
-                        .attr("d", diagonal);
-                };
-
-                // INIT
-                ctrl.message.split();               
-            };
-
+            
             angular
                 .module('core')
-                .controller('treeController', treeController);
+                .controller('treeController', ctrl);
 
             // INIT
             angular
                 .bootstrap(document, ['core']);
 
-        })(this, angular, d3, _);
+        })(angular, pageIndex.Controller);
     </script>
 </body>
 </html>
